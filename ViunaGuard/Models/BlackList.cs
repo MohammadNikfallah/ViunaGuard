@@ -1,21 +1,21 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace ViunaGuard.Models
 {
-    public class Door
+    public class BlackList
     {
         [Key]
         public int Id { get; set; }
-        [Required]
-        public string Name { get; set; }
-        [Required, ForeignKey("Oranization")]
+        [Required, ForeignKey("Organization")]
         public int OrganizationId { get; set; }
         [JsonIgnore]
         public Organization Organization { get; set; }
-        public bool ConferenceMode { get; set; } = false;
+        [Required, ForeignKey("Person")]
+        public Guid PersonId { get; set; }
         [JsonIgnore]
-        public List<EmployeeShift> EmployeeShifts { get; set; } = new List<EmployeeShift>();
+        public Person Person { get; set; }
     }
 }

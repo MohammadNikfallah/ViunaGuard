@@ -4,25 +4,23 @@ using System.Text.Json.Serialization;
 
 namespace ViunaGuard.Models
 {
-    public class Employee
+    public class EntranceGroup
     {
-        [Required]
         [Key]
         public Guid Id { get; set; }
-        [Required]
-        [ForeignKey("Organization")]
+        [Required, ForeignKey("Organization")]
         public int OrganizationId { get; set; }
         [JsonIgnore]
         public Organization Organization { get; set; }
         [Required, ForeignKey("Person")]
         public Guid PersonId { get; set; }
         [JsonIgnore]
-        public Person Person { get; set; }
-        [Required]
-        public int EmployeeTypeId{ get; set; }
-        public string? PersonnelID { get; set; } = string.Empty;
+        public Person? Person { get; set; }
+        [ForeignKey("Car")]
+        public Guid? CarId { get; set; }
         [JsonIgnore]
-        public List<EmployeeShift> EmployeeShifts { get; set; } = new List<EmployeeShift>();
-
+        public Car? Car { get; set; }
+        [ForeignKey("EntranceType")]
+        public int EntranceTypeId { get; set; }
     }
 }

@@ -23,16 +23,33 @@ namespace ViunaGuard.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Doors",
+                name: "EntrancePolicies",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    DoorId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    CheckCars = table.Column<bool>(type: "bit", nullable: false),
+                    CheckPoeple = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Doors", x => x.Id);
+                    table.PrimaryKey("PK_EntrancePolicies", x => x.DoorId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OrganizationPolicies",
+                columns: table => new
+                {
+                    OrganizationId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CheckGuests = table.Column<bool>(type: "bit", nullable: false),
+                    CheckUnregisteredGuests = table.Column<bool>(type: "bit", nullable: false),
+                    CheckCarsOnConferenceMode = table.Column<bool>(type: "bit", nullable: false),
+                    CheckpeopleOnConferenceMode = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OrganizationPolicies", x => x.OrganizationId);
                 });
 
             migrationBuilder.CreateTable(
@@ -46,6 +63,21 @@ namespace ViunaGuard.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Organizations", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserAccesses",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CanChangeShifts = table.Column<bool>(type: "bit", nullable: false),
+                    CanBringGuests = table.Column<bool>(type: "bit", nullable: false),
+                    CanInviteGuests = table.Column<bool>(type: "bit", nullable: false),
+                    AlwaysHaveEntrancePermission = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserAccesses", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -63,9 +95,13 @@ namespace ViunaGuard.Migrations
                     FathersName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     GenderId = table.Column<int>(type: "int", nullable: true),
                     BirthPlaceId = table.Column<int>(type: "int", nullable: true),
-                    BirthDay = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    BirthDay = table.Column<DateTime>(type: "date", nullable: false),
                     CityOfResidenceId = table.Column<int>(type: "int", nullable: true),
-                    EducationalDegreeId = table.Column<int>(type: "int", nullable: true)
+                    EducationalDegreeId = table.Column<int>(type: "int", nullable: true),
+                    MilitaryServiceStatsCode = table.Column<int>(type: "int", nullable: true),
+                    NationalityId = table.Column<int>(type: "int", nullable: true),
+                    ReligionId = table.Column<int>(type: "int", nullable: true),
+                    MaritalStatusId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -79,12 +115,60 @@ namespace ViunaGuard.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Doors",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    OrganizationId = table.Column<int>(type: "int", nullable: false),
+                    ConferenceMode = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Doors", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Doors_Organizations_OrganizationId",
+                        column: x => x.OrganizationId,
+                        principalTable: "Organizations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BlackList",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    OrganizationId = table.Column<int>(type: "int", nullable: false),
+                    PersonId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BlackList", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_BlackList_Organizations_OrganizationId",
+                        column: x => x.OrganizationId,
+                        principalTable: "Organizations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_BlackList_People_PersonId",
+                        column: x => x.PersonId,
+                        principalTable: "People",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Cars",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     OwnerId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     ColorId = table.Column<int>(type: "int", nullable: true),
+                    BrandId = table.Column<int>(type: "int", nullable: true),
                     ModelId = table.Column<int>(type: "int", nullable: true),
                     Tag = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
@@ -123,6 +207,78 @@ namespace ViunaGuard.Migrations
                         principalTable: "People",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EntranceGroups",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    OrganizationId = table.Column<int>(type: "int", nullable: false),
+                    PersonId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CarId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    EntranceTypeId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EntranceGroups", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_EntranceGroups_Cars_CarId",
+                        column: x => x.CarId,
+                        principalTable: "Cars",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_EntranceGroups_Organizations_OrganizationId",
+                        column: x => x.OrganizationId,
+                        principalTable: "Organizations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_EntranceGroups_People_PersonId",
+                        column: x => x.PersonId,
+                        principalTable: "People",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EmployeeShifts",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    EmployeeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    OrganizationId = table.Column<int>(type: "int", nullable: false),
+                    StartTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    FinishTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    GuardDoorId = table.Column<int>(type: "int", nullable: true),
+                    ShiftMakerEmployeeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EmployeeShifts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_EmployeeShifts_Doors_GuardDoorId",
+                        column: x => x.GuardDoorId,
+                        principalTable: "Doors",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_EmployeeShifts_Employees_EmployeeId",
+                        column: x => x.EmployeeId,
+                        principalTable: "Employees",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_EmployeeShifts_Employees_ShiftMakerEmployeeId",
+                        column: x => x.ShiftMakerEmployeeId,
+                        principalTable: "Employees",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.NoAction);
+                    table.ForeignKey(
+                        name: "FK_EmployeeShifts_Organizations_OrganizationId",
+                        column: x => x.OrganizationId,
+                        principalTable: "Organizations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.NoAction);
                 });
 
             migrationBuilder.CreateTable(
@@ -188,6 +344,17 @@ namespace ViunaGuard.Migrations
                         principalTable: "Cars",
                         principalColumn: "Id");
                     table.ForeignKey(
+                        name: "FK_Entrances_Doors_EnterDoorId",
+                        column: x => x.EnterDoorId,
+                        principalTable: "Doors",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.NoAction);
+                    table.ForeignKey(
+                        name: "FK_Entrances_Doors_ExitDoorId",
+                        column: x => x.ExitDoorId,
+                        principalTable: "Doors",
+                        principalColumn: "Id");
+                    table.ForeignKey(
                         name: "FK_Entrances_Employees_EmployeeId",
                         column: x => x.EmployeeId,
                         principalTable: "Employees",
@@ -218,9 +385,24 @@ namespace ViunaGuard.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_BlackList_OrganizationId",
+                table: "BlackList",
+                column: "OrganizationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BlackList_PersonId",
+                table: "BlackList",
+                column: "PersonId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Cars_OwnerId",
                 table: "Cars",
                 column: "OwnerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Doors_OrganizationId",
+                table: "Doors",
+                column: "OrganizationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Employees_OrganizationId",
@@ -230,6 +412,41 @@ namespace ViunaGuard.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Employees_PersonId",
                 table: "Employees",
+                column: "PersonId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EmployeeShifts_EmployeeId",
+                table: "EmployeeShifts",
+                column: "EmployeeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EmployeeShifts_GuardDoorId",
+                table: "EmployeeShifts",
+                column: "GuardDoorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EmployeeShifts_OrganizationId",
+                table: "EmployeeShifts",
+                column: "OrganizationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EmployeeShifts_ShiftMakerEmployeeId",
+                table: "EmployeeShifts",
+                column: "ShiftMakerEmployeeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EntranceGroups_CarId",
+                table: "EntranceGroups",
+                column: "CarId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EntranceGroups_OrganizationId",
+                table: "EntranceGroups",
+                column: "OrganizationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EntranceGroups_PersonId",
+                table: "EntranceGroups",
                 column: "PersonId");
 
             migrationBuilder.CreateIndex(
@@ -258,9 +475,19 @@ namespace ViunaGuard.Migrations
                 column: "EmployeeId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Entrances_EnterDoorId",
+                table: "Entrances",
+                column: "EnterDoorId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Entrances_EnterGuardId",
                 table: "Entrances",
                 column: "EnterGuardId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Entrances_ExitDoorId",
+                table: "Entrances",
+                column: "ExitDoorId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Entrances_ExitGuardId",
@@ -287,16 +514,34 @@ namespace ViunaGuard.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Doors");
+                name: "BlackList");
+
+            migrationBuilder.DropTable(
+                name: "EmployeeShifts");
+
+            migrationBuilder.DropTable(
+                name: "EntranceGroups");
 
             migrationBuilder.DropTable(
                 name: "EntrancePermissions");
 
             migrationBuilder.DropTable(
+                name: "EntrancePolicies");
+
+            migrationBuilder.DropTable(
                 name: "Entrances");
 
             migrationBuilder.DropTable(
+                name: "OrganizationPolicies");
+
+            migrationBuilder.DropTable(
+                name: "UserAccesses");
+
+            migrationBuilder.DropTable(
                 name: "Cars");
+
+            migrationBuilder.DropTable(
+                name: "Doors");
 
             migrationBuilder.DropTable(
                 name: "Employees");

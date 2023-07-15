@@ -20,7 +20,6 @@ namespace ViunaGuard.Models
         public Guid? EmployeeId { get; set; }
         [JsonIgnore]
         public Employee? Employee { get; set; }
-
         [Required]
         public DateTime EnterTime { get; set; }
         public DateTime? ExitTime { get; set; }
@@ -46,7 +45,5 @@ namespace ViunaGuard.Models
         [JsonIgnore]
         public Door ExitDoor { get; set; }
         public Guid? ReferenceEmployeeId { get; set; }
-
-
     }
 }
