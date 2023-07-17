@@ -26,5 +26,7 @@ namespace ViunaGuard.Models
         public Guid? PermissionGranterEmployeeId { get; set; }
         [JsonIgnore]
         public Employee PermissionGranter { get; set; }
+        //inviter
+
     }
 }

@@ -11,7 +11,7 @@ namespace ViunaGuard.Models
         public Guid Id { get; set; }
         [Required]
         [ForeignKey("Organization")]
-        public int OrganizationId { get; set; }
+        public int OrganizationId { get; set; }//unique with personnel id
         [JsonIgnore]
         public Organization Organization { get; set; }
         [Required, ForeignKey("Person")]

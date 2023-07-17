@@ -35,7 +35,7 @@ namespace ViunaGuard.Data
 
         public DbSet<Person> People => Set<Person>();
         public DbSet<Organization> Organizations=> Set<Organization>();
-        public DbSet<AdditionalInfo> AdditionalInfos=> Set<AdditionalInfo>();
+        public DbSet<PersonAdditionalInfo> PersonAdditionalInfos=> Set<PersonAdditionalInfo>();
         public DbSet<Car> Cars=> Set<Car>();
         public DbSet<Door> Doors=> Set<Door>();
         public DbSet<Employee> Employees=> Set<Employee>();

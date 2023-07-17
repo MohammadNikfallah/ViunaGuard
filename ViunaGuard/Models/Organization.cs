@@ -11,7 +11,5 @@ namespace ViunaGuard.Models
         public List<Employee> Employees { get; set; } = new List<Employee>();
         public List<Entrance> Entrances { get; set; } = new List<Entrance>();
         public List<Door> Doors { get; set; } = new List<Door>();
-        //public List<BlackList> BlackList { get; set; } = new List<BlackList>();
-        //public List<EmployeeShift> EmployeeShifts { get; set; } = new List<EmployeeShift>();
     }
 }

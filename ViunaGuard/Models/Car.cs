@@ -11,11 +11,11 @@ namespace ViunaGuard.Models
         [ForeignKey("Owner")]
         public Guid? OwnerId { get; set; }
         [JsonIgnore]
-        public Person? Owner { get; set; }
+        public Person? Owner { get; set; } //Table joda
         public int? ColorId { get; set; }
         public int? BrandId { get; set; }
         public int? ModelId { get; set; }
-        public string? Tag { get; set; }
+        public string? LicenseNumber { get; set; }
 
     }
 }
