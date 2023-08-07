@@ -72,7 +72,10 @@ namespace ViunaGuard.Controllers
         [HttpGet("GetPeople")]
         public async Task<ActionResult<List<Person>>> GetPeople()
         {
-            var people = await context.People.Include(p => p.Cars).Select(p => mapper.Map<PersonGetDto>(p)).ToListAsync();
+            var people = await context.People
+                .Include(p => p.Cars)
+                .Include(p => p.Jobs)
+                .Select(p => mapper.Map<PersonGetDto>(p)).ToListAsync();
             return Ok(people);
         }
 

@@ -14,7 +14,6 @@ namespace ViunaGuard.Models
         [JsonIgnore]
         public Organization Organization { get; set; } = null!;
         [Required, ForeignKey("Person")]
-
         public int PersonId { get; set; }
         public Person Person { get; set; } = null!;
         [Required]
@@ -26,12 +25,9 @@ namespace ViunaGuard.Models
         [JsonIgnore]
         public Car? Car { get; set; }
         [Required]
-        public bool PermissionGranted { get; set; }
-        [ForeignKey("PermissionGranter")]
-        public int? PermissionGranterEmployeeId { get; set; }
+        public bool PermissionGranted { get; set; } = false;
         [JsonIgnore]
-        public Employee? PermissionGranter { get; set; }
-        //inviter
+        public List<SignedEntrancePermission> Signatures { get; set; } = new List<SignedEntrancePermission>();
 
     }
 }
