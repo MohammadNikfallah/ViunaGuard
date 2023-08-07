@@ -85,6 +85,7 @@ namespace ViunaGuard.Controllers
         {
             var response = await context.Authorities
                 .Where(s => s.OrganizationId == organizationId)
+                .OrderBy(s => s.AuthorityLevel)
                 .ToListAsync();
             return Ok(response);
         }
