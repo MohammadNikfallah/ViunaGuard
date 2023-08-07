@@ -6,10 +6,11 @@ namespace ViunaGuard.Models
 {
     public class Authority
     {
-        [Required, ForeignKey("Organization"), Key]
+        [Required, ForeignKey("Organization")]
         public int OrganizationId { get; set; }
         [JsonIgnore]
         public Organization Organization { get; set; } = null!;
+        [Key]
         public int Id { get; set; }
         [Required]
         public int AuthorityLevel { get; set; }

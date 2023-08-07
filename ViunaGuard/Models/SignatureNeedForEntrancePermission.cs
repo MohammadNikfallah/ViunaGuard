@@ -12,7 +12,9 @@ namespace ViunaGuard.Models
         public int OrganizationId { get; set; }
         [JsonIgnore]
         public Organization? Organization { get; set; }
-        [Required]
-        public int AuthorityMinLevel { get; set; }
+        [Required, ForeignKey("MinAuthority")]
+        public int MinAuthorityId { get; set; }
+        [JsonIgnore]
+        public Authority? MinAuthority { get; set; }
     }
 }

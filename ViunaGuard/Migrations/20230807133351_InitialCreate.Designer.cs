@@ -12,7 +12,7 @@ using ViunaGuard.Data;
 namespace ViunaGuard.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230805132452_InitialCreate")]
+    [Migration("20230807133351_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -57,8 +57,11 @@ namespace ViunaGuard.Migrations
 
             modelBuilder.Entity("ViunaGuard.Models.Authority", b =>
                 {
-                    b.Property<int>("OrganizationId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AuthorityLevel")
                         .HasColumnType("int");
@@ -67,10 +70,12 @@ namespace ViunaGuard.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Id")
+                    b.Property<int>("OrganizationId")
                         .HasColumnType("int");
 
-                    b.HasKey("OrganizationId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId");
 
                     b.ToTable("Authorities");
                 });
@@ -101,6 +106,12 @@ namespace ViunaGuard.Migrations
                         .HasColumnType("nvarchar(17)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BrandId");
+
+                    b.HasIndex("ColorId");
+
+                    b.HasIndex("ModelId");
 
                     b.ToTable("Cars");
                 });
@@ -153,6 +164,8 @@ namespace ViunaGuard.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AuthorityLevelId");
+
+                    b.HasIndex("EmployeeTypeId");
 
                     b.HasIndex("OrganizationId");
 
@@ -333,7 +346,11 @@ namespace ViunaGuard.Migrations
 
                     b.HasIndex("EmployeeId");
 
+                    b.HasIndex("EnterOrExitId");
+
                     b.HasIndex("EntranceGroupId");
+
+                    b.HasIndex("EntranceTypeId");
 
                     b.HasIndex("GuardId");
 
@@ -392,9 +409,6 @@ namespace ViunaGuard.Migrations
                     b.Property<bool>("PermissionGranted")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("PermissionGranterEmployeeId")
-                        .HasColumnType("int");
-
                     b.Property<int>("PersonId")
                         .HasColumnType("int");
 
@@ -406,8 +420,6 @@ namespace ViunaGuard.Migrations
                     b.HasIndex("CarId");
 
                     b.HasIndex("OrganizationId");
-
-                    b.HasIndex("PermissionGranterEmployeeId");
 
                     b.HasIndex("PersonId");
 
@@ -431,6 +443,227 @@ namespace ViunaGuard.Migrations
                     b.HasKey("DoorId");
 
                     b.ToTable("EntrancePolicies");
+                });
+
+            modelBuilder.Entity("ViunaGuard.Models.Enums.CarBrand", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Brand")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CarBrands");
+                });
+
+            modelBuilder.Entity("ViunaGuard.Models.Enums.CarModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Model")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CarModels");
+                });
+
+            modelBuilder.Entity("ViunaGuard.Models.Enums.City", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Cities");
+                });
+
+            modelBuilder.Entity("ViunaGuard.Models.Enums.Color", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Colors");
+                });
+
+            modelBuilder.Entity("ViunaGuard.Models.Enums.EducationalDegree", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Degree")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EducationalDegrees");
+                });
+
+            modelBuilder.Entity("ViunaGuard.Models.Enums.EmployeeType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EmployeeTypes");
+                });
+
+            modelBuilder.Entity("ViunaGuard.Models.Enums.EnterOrExit", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EnterOrExit");
+                });
+
+            modelBuilder.Entity("ViunaGuard.Models.Enums.EntranceType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EntranceTypes");
+                });
+
+            modelBuilder.Entity("ViunaGuard.Models.Enums.Gender", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Genders");
+                });
+
+            modelBuilder.Entity("ViunaGuard.Models.Enums.MaritalStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Stat")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MaritalStatuses");
+                });
+
+            modelBuilder.Entity("ViunaGuard.Models.Enums.MilitaryServiceStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Stat")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MilitaryServiceStatuses");
+                });
+
+            modelBuilder.Entity("ViunaGuard.Models.Enums.Nationality", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Nationalities");
+                });
+
+            modelBuilder.Entity("ViunaGuard.Models.Enums.Religion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Religions");
                 });
 
             modelBuilder.Entity("ViunaGuard.Models.Organization", b =>
@@ -486,7 +719,7 @@ namespace ViunaGuard.Migrations
                     b.Property<DateTime?>("BirthDay")
                         .HasColumnType("date");
 
-                    b.Property<int?>("BirthPlaceId")
+                    b.Property<int?>("BirthPlaceCityId")
                         .HasColumnType("int");
 
                     b.Property<string>("CellPhoneNumber")
@@ -518,12 +751,13 @@ namespace ViunaGuard.Migrations
                     b.Property<int?>("MaritalStatusId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("MilitaryServiceStatsCode")
+                    b.Property<int?>("MilitaryServiceStatusId")
                         .HasColumnType("int");
 
                     b.Property<string>("NationalId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<int?>("NationalityId")
                         .HasColumnType("int");
@@ -539,7 +773,26 @@ namespace ViunaGuard.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BirthPlaceCityId");
+
+                    b.HasIndex("CityOfResidenceId");
+
+                    b.HasIndex("EducationalDegreeId");
+
+                    b.HasIndex("GenderId");
+
+                    b.HasIndex("MaritalStatusId");
+
+                    b.HasIndex("MilitaryServiceStatusId");
+
+                    b.HasIndex("NationalId")
+                        .IsUnique();
+
+                    b.HasIndex("NationalityId");
+
                     b.HasIndex("PersonAdditionalInfoId");
+
+                    b.HasIndex("ReligionId");
 
                     b.ToTable("People");
                 });
@@ -555,6 +808,62 @@ namespace ViunaGuard.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("PersonAdditionalInfos");
+                });
+
+            modelBuilder.Entity("ViunaGuard.Models.SignatureNeedForEntrancePermission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("MinAuthorityId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MinAuthorityId");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.ToTable("SignatureNeedForEntrancePermissions");
+                });
+
+            modelBuilder.Entity("ViunaGuard.Models.SignedEntrancePermission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AuthorityID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EntrancePermissionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SignedByEmployeeId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorityID");
+
+                    b.HasIndex("EntrancePermissionId");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("SignedByEmployeeId");
+
+                    b.ToTable("SignedEntrancePermissions");
                 });
 
             modelBuilder.Entity("ViunaGuard.Models.UserAccess", b =>
@@ -623,6 +932,27 @@ namespace ViunaGuard.Migrations
                     b.Navigation("Organization");
                 });
 
+            modelBuilder.Entity("ViunaGuard.Models.Car", b =>
+                {
+                    b.HasOne("ViunaGuard.Models.Enums.CarBrand", "CarBrand")
+                        .WithMany()
+                        .HasForeignKey("BrandId");
+
+                    b.HasOne("ViunaGuard.Models.Enums.Color", "Color")
+                        .WithMany()
+                        .HasForeignKey("ColorId");
+
+                    b.HasOne("ViunaGuard.Models.Enums.CarModel", "CarModel")
+                        .WithMany()
+                        .HasForeignKey("ModelId");
+
+                    b.Navigation("CarBrand");
+
+                    b.Navigation("CarModel");
+
+                    b.Navigation("Color");
+                });
+
             modelBuilder.Entity("ViunaGuard.Models.Door", b =>
                 {
                     b.HasOne("ViunaGuard.Models.Organization", "Organization")
@@ -642,6 +972,12 @@ namespace ViunaGuard.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("ViunaGuard.Models.Enums.EmployeeType", "EmployeeType")
+                        .WithMany()
+                        .HasForeignKey("EmployeeTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("ViunaGuard.Models.Organization", "Organization")
                         .WithMany("Employees")
                         .HasForeignKey("OrganizationId")
@@ -655,6 +991,8 @@ namespace ViunaGuard.Migrations
                         .IsRequired();
 
                     b.Navigation("Authority");
+
+                    b.Navigation("EmployeeType");
 
                     b.Navigation("Organization");
 
@@ -770,9 +1108,21 @@ namespace ViunaGuard.Migrations
                         .WithMany()
                         .HasForeignKey("EmployeeId");
 
+                    b.HasOne("ViunaGuard.Models.Enums.EnterOrExit", "EnterOrExit")
+                        .WithMany()
+                        .HasForeignKey("EnterOrExitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("ViunaGuard.Models.EntranceGroup", "EntranceGroup")
                         .WithMany("Entrances")
                         .HasForeignKey("EntranceGroupId");
+
+                    b.HasOne("ViunaGuard.Models.Enums.EntranceType", "EntranceType")
+                        .WithMany()
+                        .HasForeignKey("EntranceTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("ViunaGuard.Models.Employee", "Guard")
                         .WithMany()
@@ -798,7 +1148,11 @@ namespace ViunaGuard.Migrations
 
                     b.Navigation("Employee");
 
+                    b.Navigation("EnterOrExit");
+
                     b.Navigation("EntranceGroup");
+
+                    b.Navigation("EntranceType");
 
                     b.Navigation("Guard");
 
@@ -842,10 +1196,6 @@ namespace ViunaGuard.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ViunaGuard.Models.Employee", "PermissionGranter")
-                        .WithMany()
-                        .HasForeignKey("PermissionGranterEmployeeId");
-
                     b.HasOne("ViunaGuard.Models.Person", "Person")
                         .WithMany("EntrancePermissions")
                         .HasForeignKey("PersonId")
@@ -856,20 +1206,120 @@ namespace ViunaGuard.Migrations
 
                     b.Navigation("Organization");
 
-                    b.Navigation("PermissionGranter");
-
                     b.Navigation("Person");
                 });
 
             modelBuilder.Entity("ViunaGuard.Models.Person", b =>
                 {
+                    b.HasOne("ViunaGuard.Models.Enums.City", "BirthPlaceCity")
+                        .WithMany()
+                        .HasForeignKey("BirthPlaceCityId");
+
+                    b.HasOne("ViunaGuard.Models.Enums.City", "CityOfResidence")
+                        .WithMany()
+                        .HasForeignKey("CityOfResidenceId");
+
+                    b.HasOne("ViunaGuard.Models.Enums.EducationalDegree", "EducationalDegree")
+                        .WithMany()
+                        .HasForeignKey("EducationalDegreeId");
+
+                    b.HasOne("ViunaGuard.Models.Enums.Gender", "Gender")
+                        .WithMany()
+                        .HasForeignKey("GenderId");
+
+                    b.HasOne("ViunaGuard.Models.Enums.MaritalStatus", "MaritalStatus")
+                        .WithMany()
+                        .HasForeignKey("MaritalStatusId");
+
+                    b.HasOne("ViunaGuard.Models.Enums.MilitaryServiceStatus", "MilitaryServiceStatus")
+                        .WithMany()
+                        .HasForeignKey("MilitaryServiceStatusId");
+
+                    b.HasOne("ViunaGuard.Models.Enums.Nationality", "Nationality")
+                        .WithMany()
+                        .HasForeignKey("NationalityId");
+
                     b.HasOne("ViunaGuard.Models.PersonAdditionalInfo", "PersonAdditionalInfo")
                         .WithMany()
                         .HasForeignKey("PersonAdditionalInfoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("ViunaGuard.Models.Enums.Religion", "Religion")
+                        .WithMany()
+                        .HasForeignKey("ReligionId");
+
+                    b.Navigation("BirthPlaceCity");
+
+                    b.Navigation("CityOfResidence");
+
+                    b.Navigation("EducationalDegree");
+
+                    b.Navigation("Gender");
+
+                    b.Navigation("MaritalStatus");
+
+                    b.Navigation("MilitaryServiceStatus");
+
+                    b.Navigation("Nationality");
+
                     b.Navigation("PersonAdditionalInfo");
+
+                    b.Navigation("Religion");
+                });
+
+            modelBuilder.Entity("ViunaGuard.Models.SignatureNeedForEntrancePermission", b =>
+                {
+                    b.HasOne("ViunaGuard.Models.Authority", "MinAuthority")
+                        .WithMany()
+                        .HasForeignKey("MinAuthorityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ViunaGuard.Models.Organization", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MinAuthority");
+
+                    b.Navigation("Organization");
+                });
+
+            modelBuilder.Entity("ViunaGuard.Models.SignedEntrancePermission", b =>
+                {
+                    b.HasOne("ViunaGuard.Models.Authority", "Authority")
+                        .WithMany()
+                        .HasForeignKey("AuthorityID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ViunaGuard.Models.EntrancePermission", "EntrancePermission")
+                        .WithMany("Signatures")
+                        .HasForeignKey("EntrancePermissionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ViunaGuard.Models.Organization", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ViunaGuard.Models.Employee", "SigningEmployee")
+                        .WithMany()
+                        .HasForeignKey("SignedByEmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Authority");
+
+                    b.Navigation("EntrancePermission");
+
+                    b.Navigation("Organization");
+
+                    b.Navigation("SigningEmployee");
                 });
 
             modelBuilder.Entity("ViunaGuard.Models.Door", b =>
@@ -885,6 +1335,11 @@ namespace ViunaGuard.Migrations
             modelBuilder.Entity("ViunaGuard.Models.EntranceGroup", b =>
                 {
                     b.Navigation("Entrances");
+                });
+
+            modelBuilder.Entity("ViunaGuard.Models.EntrancePermission", b =>
+                {
+                    b.Navigation("Signatures");
                 });
 
             modelBuilder.Entity("ViunaGuard.Models.Organization", b =>

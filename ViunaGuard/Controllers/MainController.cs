@@ -93,14 +93,34 @@ namespace ViunaGuard.Controllers
             return Ok(cars);
         }
 
-        [HttpGet("GetTodayEntrances")]
-        public async Task<ActionResult<List<Entrance>>> GetTodayEntrances(int doorId)
+        [HttpGet("GetEntrances")]
+        public async Task<ActionResult<List<Entrance>>> GetEntrances(DateOnly date
+            , int doorId, int personId, int organizationId, int carId, int guardId, int entranceTypeId, int enterOrExitId)
         {
-            var entrances = await context.Entrances.Where(e => e.Time.Date == DateTime.Now.Date && e.DoorId == doorId)
-                .Include(e => e.Person)
+            var entrances = context.Entrances.Where( e => true);
+            if (date != DateOnly.MinValue)
+                entrances = entrances.Where(e => e.Time.Date == date.ToDateTime(TimeOnly.MinValue).Date);
+            if(doorId > 0)
+                entrances = entrances.Where(e => e.DoorId == doorId);
+            if(personId > 0)
+                entrances = entrances.Where(e => e.PersonId == personId);
+            if(organizationId > 0)
+                entrances = entrances.Where(e => e.OrganizationId == organizationId);
+            if(carId > 0)
+                entrances = entrances.Where(e => e.CarId == carId);
+            if(guardId > 0)
+                entrances = entrances.Where(e => e.GuardId == guardId);
+            if(entranceTypeId > 0)
+                entrances = entrances.Where(e => e.EntranceTypeId == entranceTypeId);
+            if(enterOrExitId > 0)
+                entrances = entrances.Where(e => e.EnterOrExitId == enterOrExitId);
+
+            await entrances.Include(e => e.Person)
                 .Include(e => e.Car)
                 .Include(e => e.Guard)
                 .Include(e => e.EntranceType)
+                .Include(e => e.EnterOrExit)
+                .Include(e => e.Door)
                 .Select(e => mapper.Map<EntranceGetDto>(e)).ToListAsync();
             return Ok(entrances);
         }
@@ -112,6 +132,15 @@ namespace ViunaGuard.Controllers
             await context.Entrances.AddAsync(entrance);
             await context.SaveChangesAsync();
             return Ok(entrance);
+        }
+
+        [HttpGet("GetOrganizationSignatureNeed")]
+        public async Task<ActionResult<List<SignatureNeedForEntrancePermission>>> GetOrganizationSignatureNeed
+            (int organizationId)
+        {
+            var response = await context.SignatureNeedForEntrancePermissions
+                .Where(s => s.OrganizationId == organizationId).ToListAsync();
+            return Ok(response);
         }
 
 

@@ -54,8 +54,11 @@ namespace ViunaGuard.Migrations
 
             modelBuilder.Entity("ViunaGuard.Models.Authority", b =>
                 {
-                    b.Property<int>("OrganizationId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AuthorityLevel")
                         .HasColumnType("int");
@@ -64,10 +67,12 @@ namespace ViunaGuard.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Id")
+                    b.Property<int>("OrganizationId")
                         .HasColumnType("int");
 
-                    b.HasKey("OrganizationId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId");
 
                     b.ToTable("Authorities");
                 });
@@ -810,13 +815,15 @@ namespace ViunaGuard.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AuthorityMinLevel")
+                    b.Property<int>("MinAuthorityId")
                         .HasColumnType("int");
 
                     b.Property<int>("OrganizationId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("MinAuthorityId");
 
                     b.HasIndex("OrganizationId");
 
@@ -831,7 +838,7 @@ namespace ViunaGuard.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AuthorityLevel")
+                    b.Property<int>("AuthorityID")
                         .HasColumnType("int");
 
                     b.Property<int>("EntrancePermissionId")
@@ -844,6 +851,8 @@ namespace ViunaGuard.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AuthorityID");
 
                     b.HasIndex("EntrancePermissionId");
 
@@ -1258,17 +1267,31 @@ namespace ViunaGuard.Migrations
 
             modelBuilder.Entity("ViunaGuard.Models.SignatureNeedForEntrancePermission", b =>
                 {
+                    b.HasOne("ViunaGuard.Models.Authority", "MinAuthority")
+                        .WithMany()
+                        .HasForeignKey("MinAuthorityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("ViunaGuard.Models.Organization", "Organization")
                         .WithMany()
                         .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("MinAuthority");
+
                     b.Navigation("Organization");
                 });
 
             modelBuilder.Entity("ViunaGuard.Models.SignedEntrancePermission", b =>
                 {
+                    b.HasOne("ViunaGuard.Models.Authority", "Authority")
+                        .WithMany()
+                        .HasForeignKey("AuthorityID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("ViunaGuard.Models.EntrancePermission", "EntrancePermission")
                         .WithMany("Signatures")
                         .HasForeignKey("EntrancePermissionId")
@@ -1286,6 +1309,8 @@ namespace ViunaGuard.Migrations
                         .HasForeignKey("SignedByEmployeeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Authority");
 
                     b.Navigation("EntrancePermission");
 
