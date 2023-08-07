@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using ViunaGuard.Models.Enums;
 
 namespace ViunaGuard.Models
 {
@@ -18,8 +19,9 @@ namespace ViunaGuard.Models
         public int PersonId { get; set; }
         [JsonIgnore]
         public Person Person { get; set; } = null!;
-        [Required]
+        [Required,ForeignKey("EmployeeType")]
         public int EmployeeTypeId{ get; set; }
+        public EmployeeType? EmployeeType { get; set; }
         public string? PersonnelID { get; set; } = string.Empty;
         [ForeignKey("Authority")]
         public int AuthorityLevelId { get; set; }

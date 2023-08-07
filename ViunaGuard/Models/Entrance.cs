@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using ViunaGuard.Models.Enums;
 
 namespace ViunaGuard.Models
 {
@@ -39,7 +40,11 @@ namespace ViunaGuard.Models
         public int? EntranceGroupId { get; set; }
         [JsonIgnore]
         public EntranceGroup? EntranceGroup { get; set; }
+        [ForeignKey("EntranceType")]
         public int EntranceTypeId { get; set; }
+        public EntranceType? EntranceType { get; set; }
+        [ForeignKey("EnterOrExit")]
         public int EnterOrExitId { get; set; }
+        public EnterOrExit? EnterOrExit{ get; set; }
     }
 }

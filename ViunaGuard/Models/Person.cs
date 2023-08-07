@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using ViunaGuard.Models.Enums;
 
 namespace ViunaGuard.Models
 {
@@ -24,15 +25,31 @@ namespace ViunaGuard.Models
         public string? PhoneNumber { get; set; }
         public string? CellPhoneNumber { get; set; }
         public string? FathersName { get; set; }
+        [ForeignKey("Gender")]
         public int? GenderId { get; set; }
+        public Gender? Gender { get; set; }
+        [ForeignKey("BirthPlaceCity")]
         public int? BirthPlaceCityId { get; set; }
+        public City? BirthPlaceCity { get; set; }
         public DateOnly? BirthDay { get; set; }
+        [ForeignKey("CityOfResidence")]
         public int? CityOfResidenceId { get; set; }
+        public City? CityOfResidence { get; set; }
+        [ForeignKey("EducationalDegree")]
         public int? EducationalDegreeId { get; set; }
+        public EducationalDegree? EducationalDegree { get; set; }
+        [ForeignKey("MilitaryServiceStatus")]
         public int? MilitaryServiceStatusId { get; set; }
+        public MilitaryServiceStatus? MilitaryServiceStatus { get; set; }
+        [ForeignKey("Nationality")]
         public int? NationalityId { get; set; }
+        public Nationality? Nationality { get; set; }
+        [ForeignKey("Religion")]
         public int? ReligionId { get; set; }
+        public Religion? Religion { get; set; }
+        [ForeignKey("MaritalStatus")]
         public int? MaritalStatusId { get; set; }
+        public MaritalStatus? MaritalStatus { get; set; }
         [JsonIgnore]
         public List<Car> Cars { get; set; } = new List<Car>();
         [JsonIgnore]
