@@ -2,11 +2,13 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using ViunaGuard.Models;
+using ViunaGuard.Models.Enums;
 
 namespace ViunaGuard.Dtos
 {
     public class EntranceGetDto
     {
+        public int Id { get; set; }
         public int PersonId { get; set; }
         public Person? Person { get; set; }
         public int OrganizationId { get; set; }
@@ -24,6 +26,8 @@ namespace ViunaGuard.Dtos
         public int? EntranceGroupId { get; set; }
         public EntranceGroup? EntranceGroup { get; set; }
         public int EntranceTypeId { get; set; }
+        public EntranceType? EntranceType { get; set; }
         public int EnterOrExitId { get; set; }
+        public EnterOrExit? EnterOrExit { get; set; }
     }
 }

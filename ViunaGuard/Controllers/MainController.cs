@@ -100,6 +100,7 @@ namespace ViunaGuard.Controllers
                 .Include(e => e.Person)
                 .Include(e => e.Car)
                 .Include(e => e.Guard)
+                .Include(e => e.EntranceType)
                 .Select(e => mapper.Map<EntranceGetDto>(e)).ToListAsync();
             return Ok(entrances);
         }
