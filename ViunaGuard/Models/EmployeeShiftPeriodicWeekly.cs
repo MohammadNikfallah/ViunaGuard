@@ -1,10 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace ViunaGuard.Models
 {
-    public class EmployeeShift
+    public class EmployeeShiftPeriodicWeekly
     {
         [Key]
         public int Id { get; set; }
@@ -15,7 +15,9 @@ namespace ViunaGuard.Models
         [Required, ForeignKey("Organization")]
         public int OrganizationId { get; set; }
         [JsonIgnore]
-        public Organization? Organization { get; set; } = null!;
+        public Organization Organization { get; set; } = null!;
+        [Required]
+        public int DayOfWeek { get; set; }
         [Required]
         public DateTime StartTime { get; set; }
         [Required]
@@ -28,7 +30,5 @@ namespace ViunaGuard.Models
         public int? ShiftMakerEmployeeId { get; set; }
         [JsonIgnore]
         public Employee? ShiftMakerEmployee { get; set; } = null!;
-
-
     }
 }

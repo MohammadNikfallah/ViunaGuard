@@ -74,3 +74,9 @@ C:\Users\Mohamad\source\repos\ViunaGuard\ViunaGuard\obj\Debug\net7.0\refint\Viun
 C:\Users\Mohamad\source\repos\ViunaGuard\ViunaGuard\obj\Debug\net7.0\ViunaGuard.pdb
 C:\Users\Mohamad\source\repos\ViunaGuard\ViunaGuard\obj\Debug\net7.0\ViunaGuard.genruntimeconfig.cache
 C:\Users\Mohamad\source\repos\ViunaGuard\ViunaGuard\obj\Debug\net7.0\ref\ViunaGuard.dll
+C:\Users\Mohamad\source\repos\ViunaGuard\ViunaGuard\bin\Debug\net7.0\AutoMapper.dll
+C:\Users\Mohamad\source\repos\ViunaGuard\ViunaGuard\bin\Debug\net7.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll
+C:\Users\Mohamad\source\repos\ViunaGuard\ViunaGuard\bin\Debug\net7.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\Mohamad\source\repos\ViunaGuard\ViunaGuard\bin\Debug\net7.0\Scrutor.dll
+C:\Users\Mohamad\source\repos\ViunaGuard\ViunaGuard\bin\Debug\net7.0\Swashbuckle.AspNetCore.Filters.dll
+C:\Users\Mohamad\source\repos\ViunaGuard\ViunaGuard\bin\Debug\net7.0\Swashbuckle.AspNetCore.Filters.Abstractions.dll

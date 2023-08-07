@@ -9,23 +9,28 @@ namespace ViunaGuard.Models
         [Key]
         [Required]
         public int Id { get; set; }
+        [Required, ForeignKey("Organization")]
+        public int OrganizationId { get; set; }
+        [JsonIgnore]
+        public Organization Organization { get; set; } = null!;
         [Required, ForeignKey("Person")]
-        public Guid PersonId { get; set; }
-        public Person Person { get; set; }
+
+        public int PersonId { get; set; }
+        public Person Person { get; set; } = null!;
         [Required]
         public DateTime StartValidityTime{ get; set; }
         [Required]
         public DateTime EndValidityTime{ get; set; }
         [ForeignKey("Car")]
-        public Guid? CarId { get; set; }
+        public int? CarId { get; set; }
         [JsonIgnore]
-        public Car Car { get; set; }
+        public Car? Car { get; set; }
         [Required]
         public bool PermissionGranted { get; set; }
         [ForeignKey("PermissionGranter")]
-        public Guid? PermissionGranterEmployeeId { get; set; }
+        public int? PermissionGranterEmployeeId { get; set; }
         [JsonIgnore]
-        public Employee PermissionGranter { get; set; }
+        public Employee? PermissionGranter { get; set; }
         //inviter
 
     }

@@ -7,20 +7,20 @@ namespace ViunaGuard.Models
     public class EntranceGroup
     {
         [Key]
-        public Guid Id { get; set; }
+        public int Id { get; set; }
         [Required, ForeignKey("Organization")]
         public int OrganizationId { get; set; }
         [JsonIgnore]
-        public Organization Organization { get; set; }
-        [Required, ForeignKey("Person")]
-        public Guid PersonId { get; set; }
+        public Organization Organization { get; set; } = null!;
+        [ForeignKey("Person")]
+        public int? DriverId { get; set; }
         [JsonIgnore]
-        public Person? Person { get; set; }
+        public Person? Driver { get; set; }
         [ForeignKey("Car")]
-        public Guid? CarId { get; set; }
+        public int? CarId { get; set; }
         [JsonIgnore]
         public Car? Car { get; set; }
-        [ForeignKey("EntranceType")]
-        public int EntranceTypeId { get; set; }
+        //can entrance groups have multiple cars nad multiple drivers???
+        public List<Entrance> Entrances { get; set; } = new List<Entrance>();
     }
 }

@@ -5,6 +5,6 @@ namespace ViunaGuard.Models
     public class PersonAdditionalInfo
     {
         [Key]
-        public Guid Id { get; set; }
+        public int Id { get; set; }
     }
 }

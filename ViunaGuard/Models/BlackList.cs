@@ -12,10 +12,10 @@ namespace ViunaGuard.Models
         [Required, ForeignKey("Organization")]
         public int OrganizationId { get; set; }
         [JsonIgnore]
-        public Organization Organization { get; set; }
+        public Organization Organization { get; set; } = null!;
         [Required, ForeignKey("Person")]
-        public Guid PersonId { get; set; }
+        public int PersonId { get; set; }
         [JsonIgnore]
-        public Person Person { get; set; }
+        public Person Person { get; set; } = null!;
     }
 }

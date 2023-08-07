@@ -8,21 +8,24 @@ namespace ViunaGuard.Models
     {
         [Required]
         [Key]
-        public Guid Id { get; set; }
+        public int Id { get; set; }
         [Required]
         [ForeignKey("Organization")]
         public int OrganizationId { get; set; }//unique with personnel id
         [JsonIgnore]
-        public Organization Organization { get; set; }
+        public Organization Organization { get; set; } = null!;
         [Required, ForeignKey("Person")]
-        public Guid PersonId { get; set; }
+        public int PersonId { get; set; }
         [JsonIgnore]
-        public Person Person { get; set; }
+        public Person Person { get; set; } = null!;
         [Required]
         public int EmployeeTypeId{ get; set; }
         public string? PersonnelID { get; set; } = string.Empty;
+        [ForeignKey("Authority")]
+        public int AuthorityLevelId { get; set; }
         [JsonIgnore]
+        public Authority Authority { get; set; } = null!;
+        [JsonIgnore, InverseProperty("Employee")]
         public List<EmployeeShift> EmployeeShifts { get; set; } = new List<EmployeeShift>();
-
     }
 }

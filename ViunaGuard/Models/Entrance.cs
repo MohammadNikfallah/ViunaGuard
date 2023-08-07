@@ -7,46 +7,39 @@ namespace ViunaGuard.Models
     public class Entrance
     {
         [Key, Required]
-        public Guid Id { get; set; }
+        public int Id { get; set; }
         [Required, ForeignKey("Person")]
-        public Guid PersonId { get; set; }
+        public int PersonId { get; set; }
         [JsonIgnore]
         public Person? Person { get; set; }
         [Required, ForeignKey("Organization")]
         public int OrganizationId { get; set; }
         [JsonIgnore]
-        public Organization Organization { get; set; }
+        public Organization Organization { get; set; } = null!;
         [ForeignKey("Employee")]
-        public Guid? EmployeeId { get; set; }
+        public int? EmployeeId { get; set; }
         [JsonIgnore]
         public Employee? Employee { get; set; }
         [Required]
-        public DateTime EnterTime { get; set; }
-        //
-        public DateTime? ExitTime { get; set; }
+        public DateTime Time { get; set; }
         [ForeignKey("Car")]
-        public Guid? CarId { get; set; }
+        public int? CarId { get; set; }
         [JsonIgnore]
         public Car? Car { get; set; }
-        public int? EnterGuestCount { get; set; }
-        public int? ExitGuestCount { get; set; }
-        [Required, ForeignKey("EnterGuard")]
-        public Guid EnterGuardId { get; set; }
+        public int? GuestCount { get; set; }
+        [Required, ForeignKey("Guard")]
+        public int GuardId { get; set; }
         [JsonIgnore]
-        public Employee EnterGuard { get; set; }
-        [ForeignKey("ExitGuard")]
-        public Guid? ExitGuardId { get; set;}
+        public Employee Guard { get; set; } = null!;
+        [Required, ForeignKey("Door")]
+        public int DoorId { get; set; }
         [JsonIgnore]
-        public Employee? ExitGuard { get; set; }
-        [Required]
-        public int EnterDoorId { get; set; }
+        public Door Door { get; set; } = null!;
+        [ForeignKey("EntranceGroup")]
+        public int? EntranceGroupId { get; set; }
         [JsonIgnore]
-        public Door EnterDoor { get; set; }
-        public int? ExitDoorId { get; set; }
-        [JsonIgnore]
-        public Door ExitDoor { get; set; }
-        public Guid? ReferenceEmployeeId { get; set; }
-        //entrance type
-
+        public EntranceGroup? EntranceGroup { get; set; }
+        public int EntranceTypeId { get; set; }
+        public int EnterOrExitId { get; set; }
     }
 }

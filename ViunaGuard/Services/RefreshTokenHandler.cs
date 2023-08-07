@@ -1,0 +1,41 @@
+﻿using System.Net.Http.Headers;
+using System.Text.Json;
+
+namespace ViunaGuard.Services
+{
+    public class RefreshTokenHandlerClass
+    {
+        public static async Task<JsonDocument> RefreshTokenHandler(RTRequest request)
+        {
+            var tokenRequestParameters = new Dictionary<string, string>()
+            {
+                { "client_id", request.ClientId },
+                { "client_secret", request.ClientSecret },
+                { "refresh_token", request.RefreshToken },
+                { "grant_type", "refresh_token" },
+            };
+
+            var requestContent = new FormUrlEncodedContent(tokenRequestParameters!);
+
+            var http = new HttpClient();
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, request.TokenEndpoint);
+            requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            requestMessage.Content = requestContent;
+            requestMessage.Version = http.DefaultRequestVersion;
+            var response = await http.SendAsync(requestMessage);
+            var body = await response.Content.ReadAsStringAsync();
+
+            return JsonDocument.Parse(body);
+        }
+
+    }
+
+    public class RTRequest
+    {
+        public string ClientId { get; set; } = null!;
+        public string ClientSecret { get; set; } = null!;
+        public string RefreshToken { get; set; } = null!;
+        public string TokenEndpoint { get; set; } = null!;
+    }
+}

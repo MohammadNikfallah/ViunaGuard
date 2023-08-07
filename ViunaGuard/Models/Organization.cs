@@ -7,9 +7,11 @@ namespace ViunaGuard.Models
         [Key]
         public int Id { get; set; }
         [Required]
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
         public List<Employee> Employees { get; set; } = new List<Employee>();
         public List<Entrance> Entrances { get; set; } = new List<Entrance>();
         public List<Door> Doors { get; set; } = new List<Door>();
+        public List<Authority> Authorities { get; set; } = new List<Authority>();
+        public List<Person> AreBanned { get; set; } = new List<Person>();
     }
 }

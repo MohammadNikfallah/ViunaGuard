@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using ViunaGuard.Models;
 
-namespace ViunaGuard.Models
+namespace ViunaGuard.Dtos
 {
-    public class Car
+    public class CarPostDto
     {
         [Key]
         public int Id { get; set; }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using System.ComponentModel;
 using ViunaGuard.Models;
 
 namespace ViunaGuard.Data
@@ -26,11 +27,15 @@ namespace ViunaGuard.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Person>().HasMany(e => e.BlackList)
-                           .WithOne(e => e.Person).HasForeignKey(e => e.PersonId);
+            modelBuilder.Entity<Person>().HasMany(e => e.Cars)
+                           .WithMany(e => e.People);
 
-            modelBuilder.Entity<Employee>().HasMany(e => e.EmployeeShifts)
-                           .WithOne(e => e.Employee).HasForeignKey(e => e.EmployeeId);
+            modelBuilder.Entity<Person>().HasIndex(p => p.NationalId).IsUnique();
+
+            modelBuilder.Entity<Organization>()
+                .HasMany(org => org.AreBanned)
+                .WithMany(p => p.BannedFrom)
+                .UsingEntity(join => join.ToTable("BlackList"));
         }
 
         public DbSet<Person> People => Set<Person>();
@@ -41,12 +46,15 @@ namespace ViunaGuard.Data
         public DbSet<Employee> Employees=> Set<Employee>();
         public DbSet<Entrance> Entrances=> Set<Entrance>();
         public DbSet<EntrancePermission> EntrancePermissions=> Set<EntrancePermission>();
-        public DbSet<BlackList> BlackList => Set<BlackList>();
+        //public DbSet<BlackList> BlackList => Set<BlackList>();
         public DbSet<EmployeeShift> EmployeeShifts => Set<EmployeeShift>();
         public DbSet<EntranceGroup> EntranceGroups => Set<EntranceGroup>();
         public DbSet<EntrancePolicie> EntrancePolicies => Set<EntrancePolicie>();
         public DbSet<OrganizationPolicie> OrganizationPolicies => Set<OrganizationPolicie>();
         public DbSet<UserAccess> UserAccesses => Set<UserAccess>();
+        public DbSet<Authority> Authorities => Set<Authority>();
+        public DbSet<EmployeeShiftPeriodicMonthly> EmployeeShiftsMonthly => Set<EmployeeShiftPeriodicMonthly>();
+        public DbSet<EmployeeShiftPeriodicWeekly> EmployeeShiftsWeekly => Set<EmployeeShiftPeriodicWeekly>();
     }
     public class DateOnlyConverter : ValueConverter<DateOnly, DateTime>
     {
