@@ -12,6 +12,7 @@ namespace ViunaGuard
             CreateMap<Person, PersonGetDto>();
             CreateMap<EntrancePostDto, Entrance>();
             CreateMap<Entrance, EntranceGetDto>();
+            CreateMap<SignatureNeedForEntrancePermission, SignatureNeedGetDto>();
         }
     }
 }

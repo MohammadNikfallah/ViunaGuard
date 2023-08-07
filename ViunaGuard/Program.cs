@@ -25,6 +25,8 @@ var request = new HttpRequestMessage()
 var response = await client.SendAsync(request);
 var responseString = await response.Content.ReadAsStringAsync();
 
+builder.Services.AddScoped<IGuardService, GuardService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddAuthentication()
     .AddCookie("Cookie", options =>
