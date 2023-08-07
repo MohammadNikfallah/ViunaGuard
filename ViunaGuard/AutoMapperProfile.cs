@@ -10,6 +10,8 @@ namespace ViunaGuard
         {
             CreateMap<PersonPostDto, Person>();
             CreateMap<Person, PersonGetDto>();
+            CreateMap<EntrancePostDto, Entrance>();
+            CreateMap<Entrance, EntranceGetDto>();
         }
     }
 }

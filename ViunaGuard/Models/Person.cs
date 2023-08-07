@@ -25,11 +25,11 @@ namespace ViunaGuard.Models
         public string? CellPhoneNumber { get; set; }
         public string? FathersName { get; set; }
         public int? GenderId { get; set; }
-        public int? BirthPlaceId { get; set; }
+        public int? BirthPlaceCityId { get; set; }
         public DateOnly? BirthDay { get; set; }
         public int? CityOfResidenceId { get; set; }
         public int? EducationalDegreeId { get; set; }
-        public int? MilitaryServiceStatsCode { get; set; }
+        public int? MilitaryServiceStatusId { get; set; }
         public int? NationalityId { get; set; }
         public int? ReligionId { get; set; }
         public int? MaritalStatusId { get; set; }

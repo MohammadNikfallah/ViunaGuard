@@ -15,7 +15,5 @@ namespace ViunaGuard.Dtos
         public int? ModelId { get; set; }
         [StringLength(17)]
         public string? VIN { get; set; }
-        [JsonIgnore]
-        public List<Person> People { get; set; } = new List<Person>();
     }
 }

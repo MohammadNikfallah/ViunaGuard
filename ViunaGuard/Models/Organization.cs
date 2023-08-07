@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace ViunaGuard.Models
 {
@@ -8,10 +9,15 @@ namespace ViunaGuard.Models
         public int Id { get; set; }
         [Required]
         public string Name { get; set; } = null!;
+        [JsonIgnore]
         public List<Employee> Employees { get; set; } = new List<Employee>();
+        [JsonIgnore]
         public List<Entrance> Entrances { get; set; } = new List<Entrance>();
+        [JsonIgnore]
         public List<Door> Doors { get; set; } = new List<Door>();
+        [JsonIgnore]
         public List<Authority> Authorities { get; set; } = new List<Authority>();
+        [JsonIgnore]
         public List<Person> AreBanned { get; set; } = new List<Person>();
     }
 }

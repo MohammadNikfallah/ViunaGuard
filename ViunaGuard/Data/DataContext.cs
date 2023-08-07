@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System.ComponentModel;
 using ViunaGuard.Models;
+using ViunaGuard.Models.Enums;
 
 namespace ViunaGuard.Data
 {
@@ -38,23 +39,35 @@ namespace ViunaGuard.Data
                 .UsingEntity(join => join.ToTable("BlackList"));
         }
 
-        public DbSet<Person> People => Set<Person>();
-        public DbSet<Organization> Organizations=> Set<Organization>();
-        public DbSet<PersonAdditionalInfo> PersonAdditionalInfos=> Set<PersonAdditionalInfo>();
-        public DbSet<Car> Cars=> Set<Car>();
-        public DbSet<Door> Doors=> Set<Door>();
-        public DbSet<Employee> Employees=> Set<Employee>();
-        public DbSet<Entrance> Entrances=> Set<Entrance>();
-        public DbSet<EntrancePermission> EntrancePermissions=> Set<EntrancePermission>();
-        //public DbSet<BlackList> BlackList => Set<BlackList>();
-        public DbSet<EmployeeShift> EmployeeShifts => Set<EmployeeShift>();
-        public DbSet<EntranceGroup> EntranceGroups => Set<EntranceGroup>();
-        public DbSet<EntrancePolicie> EntrancePolicies => Set<EntrancePolicie>();
-        public DbSet<OrganizationPolicie> OrganizationPolicies => Set<OrganizationPolicie>();
-        public DbSet<UserAccess> UserAccesses => Set<UserAccess>();
-        public DbSet<Authority> Authorities => Set<Authority>();
-        public DbSet<EmployeeShiftPeriodicMonthly> EmployeeShiftsMonthly => Set<EmployeeShiftPeriodicMonthly>();
-        public DbSet<EmployeeShiftPeriodicWeekly> EmployeeShiftsWeekly => Set<EmployeeShiftPeriodicWeekly>();
+        public DbSet<Person> People { get; set; }
+        public DbSet<Organization> Organizations { get; set; }
+        public DbSet<PersonAdditionalInfo> PersonAdditionalInfos { get; set; }
+        public DbSet<Car> Cars { get; set; }
+        public DbSet<Door> Doors { get; set; }
+        public DbSet<Employee> Employees { get; set; }
+        public DbSet<Entrance> Entrances { get; set; }
+        public DbSet<EntrancePermission> EntrancePermissions { get; set; }
+        public DbSet<EmployeeShift> EmployeeShifts { get; set; }
+        public DbSet<EntranceGroup> EntranceGroups { get; set; }
+        public DbSet<EntrancePolicie> EntrancePolicies { get; set; }
+        public DbSet<OrganizationPolicie> OrganizationPolicies { get; set; }
+        public DbSet<UserAccess> UserAccesses { get; set; }
+        public DbSet<Authority> Authorities { get; set; }
+        public DbSet<EmployeeShiftPeriodicMonthly> EmployeeShiftsMonthly { get; set; }
+        public DbSet<EmployeeShiftPeriodicWeekly> EmployeeShiftsWeekly { get; set; }
+        public DbSet<CarBrand> CarBrands {  get; set; }
+        public DbSet<CarModel> CarModels {  get; set; }
+        public DbSet<City> Cities {  get; set; }
+        public DbSet<Color> Colors{  get; set; }
+        public DbSet<EducationalDegree> EducationalDegrees {  get; set; }
+        public DbSet<EmployeeType> EmployeeTypes {  get; set; }
+        public DbSet<EnterOrExit> EnterOrExit {  get; set; }
+        public DbSet<EntranceType> EntranceTypes {  get; set; }
+        public DbSet<Gender> Genders {  get; set; }
+        public DbSet<MaritalStatus> MaritalStatuses {  get; set; }
+        public DbSet<MilitaryServiceStatus> MilitaryServiceStatuses {  get; set; }
+        public DbSet<Nationality> Nationalities {  get; set; }
+        public DbSet<Religion> Religions {  get; set; }
     }
     public class DateOnlyConverter : ValueConverter<DateOnly, DateTime>
     {

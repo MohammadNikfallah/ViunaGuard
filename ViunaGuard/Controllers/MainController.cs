@@ -93,8 +93,21 @@ namespace ViunaGuard.Controllers
         [HttpGet("GetTodayEntrances")]
         public async Task<ActionResult<List<Entrance>>> GetTodayEntrances(int doorId)
         {
-            var entrances = await context.Entrances.Where(e => e.Time.Date == DateTime.Now.Date && e.DoorId == doorId).ToListAsync();
+            var entrances = await context.Entrances.Where(e => e.Time.Date == DateTime.Now.Date && e.DoorId == doorId)
+                .Include(e => e.Person)
+                .Include(e => e.Car)
+                .Include(e => e.Guard)
+                .Select(e => mapper.Map<EntranceGetDto>(e)).ToListAsync();
             return Ok(entrances);
+        }
+
+        [HttpPost("PostEntrance")]
+        public async Task<ActionResult<Entrance>> PostEntrance(EntrancePostDto entrancePostDto)
+        {
+            var entrance = mapper.Map<Entrance>(entrancePostDto);
+            await context.Entrances.AddAsync(entrance);
+            await context.SaveChangesAsync();
+            return Ok(entrance);
         }
 
 
