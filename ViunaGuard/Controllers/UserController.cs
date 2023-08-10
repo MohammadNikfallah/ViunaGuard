@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ namespace ViunaGuard.Controllers
 {
     [Route("[controller]")]
     [ApiController]
+    [Authorize]
     public class UserController : ControllerBase
     {
         private readonly IUserService userService;
@@ -26,68 +28,74 @@ namespace ViunaGuard.Controllers
         [HttpPost("postCar")]
         public async Task<ActionResult<Person>> PostCar(Car car, int id)
         {
-            Person? p = await context.People.FirstOrDefaultAsync(p => p.Id == id);
-            if (p == null)
-            {
-                return BadRequest();
-            }
-            p.Cars.Add(car);
-            var cars = await context.Cars.ToListAsync();
-            var carInList = cars.FirstOrDefault(c => c.Id == car.Id);
-            if (carInList != null)
-                carInList.People.Add(p);
+            var response = await userService.PostCar(car, id);
+            if (response.HttpResponseCode == 200)
+                return Ok(response.Data);
+            else if (response.HttpResponseCode == 404)
+                return NotFound(response.Message);
             else
-            {
-                car.People.Add(p);
-                context.Cars.Add(car);
-            }
-            await context.SaveChangesAsync();
-            return Ok(p);
+                return BadRequest(response.Message);
         }
 
         [HttpPost("postPerson")]
         public async Task<ActionResult<List<Person>>> PostPerson(PersonPostDto personDto)
         {
-            var person = mapper.Map<Person>(personDto);
-            var personAdditionalInfo = new PersonAdditionalInfo();
-            person.PersonAdditionalInfo = personAdditionalInfo;
-            await context.PersonAdditionalInfos.AddAsync(personAdditionalInfo);
-            await context.People.AddAsync(person);
-            await context.SaveChangesAsync();
-            var people = await context.People.ToListAsync();
-            return Ok(people);
+            var response = await userService.PostPerson(personDto);
+            if (response.HttpResponseCode == 200)
+                return Ok(response.Data);
+            else if (response.HttpResponseCode == 404)
+                return NotFound(response.Message);
+            else
+                return BadRequest(response.Message);
         }
 
-        [HttpPost("PostShift")]
-        public async Task<ActionResult<List<EmployeeShift>>> PostShift(EmployeeShiftPeriodicMonthly shift)
+        [HttpPost("PostShiftMonthly")]
+        public async Task<ActionResult<List<EmployeeShift>>> PostShiftMonthly(EmployeeShiftPeriodicMonthly shift)
         {
-            shift.Id = await context.EmployeeShiftsMonthly.MaxAsync(p => p.Id) + 1;
-            await context.EmployeeShiftsMonthly.AddAsync(shift);
-            await context.SaveChangesAsync();
-            var shifts = await context.EmployeeShifts.ToListAsync();
-            return Ok(shifts);
+            var response = await userService.PostShiftMonthly(shift);
+            if (response.HttpResponseCode == 200)
+                return Ok(response.Data);
+            else if (response.HttpResponseCode == 404)
+                return NotFound(response.Message);
+            else
+                return BadRequest(response.Message);
         }
 
         [HttpGet("GetOrganizationSignatureNeed")]
         public async Task<ActionResult<List<SignatureNeedForEntrancePermission>>> GetOrganizationSignatureNeed
             (int organizationId)
         {
-            var response = await context.SignatureNeedForEntrancePermissions
-                .Where(s => s.OrganizationId == organizationId)
-                .Include(s => s.MinAuthority)
-                .Select(s => mapper.Map<SignatureNeedGetDto>(s))
-                .ToListAsync();
-            return Ok(response);
+            var response = await userService.GetOrganizationSignatureNeed(organizationId);
+            if (response.HttpResponseCode == 200)
+                return Ok(response.Data);
+            else if (response.HttpResponseCode == 404)
+                return NotFound(response.Message);
+            else
+                return BadRequest(response.Message);
         }
 
         [HttpGet("GetOrganizationAuthorities")]
         public async Task<ActionResult<List<Authority>>> GetOrganizationAuthorities(int organizationId)
         {
-            var response = await context.Authorities
-                .Where(s => s.OrganizationId == organizationId)
-                .OrderBy(s => s.AuthorityLevel)
-                .ToListAsync();
-            return Ok(response);
+            var response = await userService.GetOrganizationAuthorities(organizationId);
+            if (response.HttpResponseCode == 200)
+                return Ok(response.Data);
+            else if (response.HttpResponseCode == 404)
+                return NotFound(response.Message);
+            else
+                return BadRequest(response.Message);
+        }
+
+        [HttpGet("GetPersonDetails")]
+        public async Task<ActionResult<Person>> GetPersonDetails()
+        {
+            var response = await userService.GetPersonDetails();
+            if (response.HttpResponseCode == 200)
+                return Ok(response.Data);
+            else if (response.HttpResponseCode == 404)
+                return NotFound(response.Message);
+            else
+                return BadRequest(response.Message);
         }
     }
 }

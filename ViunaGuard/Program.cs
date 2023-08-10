@@ -1,12 +1,16 @@
 global using ViunaGuard.Data;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Writers;
 using Swashbuckle.AspNetCore.Filters;
+using System;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
@@ -25,6 +29,7 @@ var request = new HttpRequestMessage()
 var response = await client.SendAsync(request);
 var responseString = await response.Content.ReadAsStringAsync();
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IGuardService, GuardService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
@@ -57,21 +62,38 @@ builder.Services.AddAuthentication()
 
         options.Events = new JwtBearerEvents
         {
-            OnMessageReceived = ctx =>
+            OnMessageReceived = async ctx =>
             {
                 if (ctx != null)
                 {
-                    if (ctx.Request.Cookies.ContainsKey("VAT") && ctx.Token == null)
-                    {
-                        ctx.Token = ctx.Request.Cookies["VAT"];
-                    }
-
-                    if (ctx.Token != null)
-                    {
-                        ctx.Response.Cookies.Append("VAT", ctx.Token);
+                    if (ctx.Token == null) {
+                        if (ctx.Request.Cookies.ContainsKey("VAT"))
+                            ctx.Token = ctx.Request.Cookies["VAT"];
+                        else if (ctx.Request.Cookies.ContainsKey("VRT"))
+                        {
+                            var tokens = await AccessRefresh(ctx.Request.Cookies["VRT"]!);
+                            if (tokens != null)
+                            {
+                                var accessToken = tokens.RootElement.GetString("access_token");
+                                ctx.Response.Cookies.Append("VAT", accessToken!, new CookieOptions
+                                {
+                                    Expires = DateTime.Now.AddDays(10),
+                                    HttpOnly = true,
+                                    SameSite = SameSiteMode.Strict,
+                                    Secure = true
+                                });
+                                ctx.Response.Cookies.Append("VRT", tokens.RootElement.GetString("refresh_token")!, new CookieOptions
+                                {
+                                    Expires = DateTime.Now.AddDays(30),
+                                    HttpOnly = true,
+                                    SameSite = SameSiteMode.Strict,
+                                    Secure = true
+                                });
+                                ctx.Token = accessToken;
+                            }
+                        }
                     }
                 }
-                return Task.CompletedTask;
             },
 
             OnAuthenticationFailed = async ctx =>
@@ -79,23 +101,24 @@ builder.Services.AddAuthentication()
                 var refreshToken = ctx.Request.Cookies.FirstOrDefault(x => x.Key == "VRT").Value;
                 if (ctx.Exception.GetType() == typeof(SecurityTokenExpiredException) && refreshToken != null)
                 {
-                    File.AppendAllText("log", DateTime.Now.ToString() + " : refreshing the access token\n");
-                    var request = new RTRequest()
-                    {
-                        ClientId = "12345",
-                        ClientSecret = "secretTest",
-                        RefreshToken = refreshToken,
-                        TokenEndpoint = "https://localhost:7120/api/OAuth/token"
-                    };
-
-                    var tokens = await RefreshTokenHandlerClass.RefreshTokenHandler(request);
-
-
+                    var tokens = await AccessRefresh(refreshToken);
                     if (tokens != null)
                     {
                         var accessToken = tokens.RootElement.GetString("access_token");
-                        ctx.Response.Cookies.Append("VAT", accessToken!);
-                        ctx.Response.Cookies.Append("VRT", tokens.RootElement.GetString("refresh_token")!);
+                        ctx.Response.Cookies.Append("VAT", accessToken!, new CookieOptions
+                        {
+                            Expires = DateTime.Now.AddMinutes(10),
+                            HttpOnly = true,
+                            SameSite = SameSiteMode.Strict,
+                            Secure = true
+                        });
+                        ctx.Response.Cookies.Append("VRT", tokens.RootElement.GetString("refresh_token")!, new CookieOptions
+                        {
+                            Expires = DateTime.Now.AddDays(30),
+                            HttpOnly = true,
+                            SameSite = SameSiteMode.Strict,
+                            Secure = true
+                        });
 
                         var jwt = new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
 
@@ -104,10 +127,49 @@ builder.Services.AddAuthentication()
                                 jwt.Claims.Select(x => new Claim(x.Type, x.Value)).ToList(),
                                 "Cookie"
                                 ));
+                        ctx.Success();
                     }
-                    ctx.Success();
                 }
-            }
+            },
+
+            //OnTokenValidated = async ctx =>
+            //{
+            //    DataContext dbContext = new DataContext();
+            //    WebHost.CreateDefaultBuilder(args)
+            //        .UseKestrel(opt => {
+            //            var sp = opt.ApplicationServices;
+            //            using (var scope = sp.CreateScope())
+            //            {
+            //                dbContext = scope.ServiceProvider.GetService<DataContext>();
+            //            }
+            //        });
+            //    var id = await dbContext.AuthIds
+            //        .FirstOrDefaultAsync(a => a.AuthId == ctx.Principal!.Claims.FirstOrDefault(p => p.Value == "ID")!.Value);
+
+            //    string role = "user";
+            //    var roleAdmin = ctx.Principal!.Claims.FirstOrDefault(p => p.Value == "role");
+            //    if (roleAdmin != null && roleAdmin.Value == "admin")
+            //        role = "admin";
+            //    else
+            //    {
+            //        var person = await dbContext.People
+            //            .Include(p => p.Jobs)
+            //            .FirstOrDefaultAsync(p => p.Id == id!.ViunaUserId);
+            //        var jobs = person!.Jobs.Select(j => j.EmployeeTypeId);
+            //        if (jobs.Any(j => j == 1))
+            //            role = "Guard";
+            //    }
+
+            //    ctx.Principal = new ClaimsPrincipal(
+            //                new ClaimsIdentity(
+            //                    new Claim[]
+            //                    {
+            //                        new Claim("ID", id.ViunaUserId.ToString()),
+            //                        new Claim("Role", role)
+            //                    },
+            //                    "Cookie"
+            //                    ));
+            //}
         };
     })
     .AddOAuth("OAuth", o =>
@@ -186,3 +248,18 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+async Task<JsonDocument> AccessRefresh(string refreshToken)
+{
+    File.AppendAllText("log", DateTime.Now.ToString() + " : refreshing the access token\n");
+    var request = new RTRequest()
+    {
+        ClientId = "12345",
+        ClientSecret = "secretTest",
+        RefreshToken = refreshToken,
+        TokenEndpoint = "https://localhost:7120/api/OAuth/token"
+    };
+
+    var tokens = await RefreshTokenHandlerClass.RefreshTokenHandler(request);
+    return tokens;
+}

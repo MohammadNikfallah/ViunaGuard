@@ -8,6 +8,10 @@ namespace ViunaGuard.Data
 {
     public class DataContext : DbContext
     {
+        public DataContext()
+        {
+            
+        }
         public DataContext(DbContextOptions<DataContext> options) : base(options)
         {
 
@@ -57,7 +61,7 @@ namespace ViunaGuard.Data
         public DbSet<EmployeeShiftPeriodicWeekly> EmployeeShiftsWeekly { get; set; }
         public DbSet<SignatureNeedForEntrancePermission> SignatureNeedForEntrancePermissions { get; set; }
         public DbSet<SignedEntrancePermission> SignedEntrancePermissions { get; set; }
-
+        public DbSet<AuthIdToViunaId> AuthIds { get; set; }
 
 
         public DbSet<CarBrand> CarBrands {  get; set; }

@@ -24,6 +24,14 @@ namespace ViunaGuard.Controllers
             
         }
 
+        [HttpGet("GetCar")]
+        public async Task<ActionResult<List<Car>>> GetCar()
+        {
+            var cars = await context.Cars.ToListAsync();
+            return Ok(cars);
+        }
+
+
         [HttpGet("GetPeople")]
         public async Task<ActionResult<List<Person>>> GetPeople()
         {
