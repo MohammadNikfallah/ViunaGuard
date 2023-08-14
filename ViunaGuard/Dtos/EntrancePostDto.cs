@@ -9,7 +9,6 @@ namespace ViunaGuard.Dtos
         public int PersonId { get; set; }
         [Required]
         public int OrganizationId { get; set; }
-        public int? EmployeeId { get; set; }
         [Required]
         public DateTime Time { get; set; }
         public int? CarId { get; set; }
@@ -18,7 +17,6 @@ namespace ViunaGuard.Dtos
         public int GuardId { get; set; }
         [Required]
         public int DoorId { get; set; }
-        public int? EntranceGroupId { get; set; }
         public int EntranceTypeId { get; set; }
         public int EnterOrExitId { get; set; }
     }

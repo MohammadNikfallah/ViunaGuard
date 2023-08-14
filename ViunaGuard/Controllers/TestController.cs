@@ -48,5 +48,11 @@ namespace ViunaGuard.Controllers
             var people = await context.People.FirstOrDefaultAsync(p => p.Id == id);
             return Ok(people);
         }
+
+        [HttpGet("GetClaims")]
+        public ActionResult GetClaims()
+        {
+            return Ok(HttpContext.User.Claims.Select(x => new { x.Type, x.Value }).ToList());
+        }
     }
 }

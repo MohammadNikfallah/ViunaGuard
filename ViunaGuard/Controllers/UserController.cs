@@ -26,9 +26,9 @@ namespace ViunaGuard.Controllers
         }
 
         [HttpPost("postCar")]
-        public async Task<ActionResult<Person>> PostCar(Car car, int id)
+        public async Task<ActionResult<Person>> PostCar(Car car, int PersonId)
         {
-            var response = await userService.PostCar(car, id);
+            var response = await userService.PostCar(car, PersonId);
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
             else if (response.HttpResponseCode == 404)
@@ -97,5 +97,30 @@ namespace ViunaGuard.Controllers
             else
                 return BadRequest(response.Message);
         }
+
+        [HttpGet("GetCurrentShift")]
+        public async Task<ActionResult<EmployeeShift>> GetCurrentShift(int EmployeeId)
+        {
+            var response = await userService.GetCurrentShift(EmployeeId);
+            if (response.HttpResponseCode == 200)
+                return Ok(response.Data);
+            else if (response.HttpResponseCode == 404)
+                return NotFound(response.Message);
+            else
+                return BadRequest(response.Message);
+        }
+
+        [HttpGet("GetEntrancePermissions")]
+        public async Task<ActionResult<List<EntrancePermissionGetDto>>> GetEntrancePermissions()
+        {
+            var response = await userService.GetEntrancePermissions();
+            if (response.HttpResponseCode == 200)
+                return Ok(response.Data);
+            else if (response.HttpResponseCode == 404)
+                return NotFound(response.Message);
+            else
+                return BadRequest(response.Message);
+        }
+
     }
 }

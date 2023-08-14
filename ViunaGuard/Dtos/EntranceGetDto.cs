@@ -14,8 +14,6 @@ namespace ViunaGuard.Dtos
         public Person? Person { get; set; }
         public int OrganizationId { get; set; }
         public Organization Organization { get; set; } = null!;
-        public int? EmployeeId { get; set; }
-        public Employee? Employee { get; set; }
         public DateTime Time { get; set; }
         [JsonIgnore]
         public int? CarId { get; set; }

@@ -13,6 +13,10 @@ namespace ViunaGuard
             CreateMap<EntrancePostDto, Entrance>();
             CreateMap<Entrance, EntranceGetDto>();
             CreateMap<SignatureNeedForEntrancePermission, SignatureNeedGetDto>();
+            CreateMap<EmployeeShift, EmployeeShiftGetDto>();
+            CreateMap<EmployeeShiftPeriodicMonthly, EmployeeShiftGetDto>();
+            CreateMap<EmployeeShiftPeriodicWeekly, EmployeeShiftGetDto>();
+            CreateMap<EntrancePermission, EntrancePermissionGetDto>();
         }
     }
 }

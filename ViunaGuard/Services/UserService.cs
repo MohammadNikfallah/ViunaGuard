@@ -128,7 +128,7 @@ namespace ViunaGuard.Services
         {
             var response = new ServiceResponse<PersonGetDto>();
 
-            var id = httpContextAccessor.HttpContext.User.FindFirstValue("ID");
+            var id = httpContextAccessor.HttpContext!.User.FindFirstValue("ID");
             if(id == null)
             {
                 response.HttpResponseCode = 404;
@@ -148,6 +148,95 @@ namespace ViunaGuard.Services
             }
 
             var dataDto = mapper.Map<PersonGetDto>(data);
+
+            response.Data = dataDto;
+            response.HttpResponseCode = 200;
+            return response;
+        }
+
+        public async Task<ServiceResponse<EmployeeShift>> GetCurrentShift(int EmployeeId)
+        {
+            var response = new ServiceResponse<EmployeeShift>();
+            var time = DateTime.Now;
+            var person = await context.People.FindAsync(httpContextAccessor.HttpContext!.User.FindFirstValue("ID"));
+            if(person!.Jobs.Any(j => j.Id == EmployeeId))
+            {
+                response.HttpResponseCode = 400;
+                response.Message = "Something wrong with EmployeeId";
+                return response;
+            }
+
+            var weeklyShift = context.EmployeeShiftsWeekly
+                .Include(e => e.GuardDoor)
+                .FirstOrDefault(e => e.EmployeeId == EmployeeId && e.DayOfWeek == ((int)time.DayOfWeek) 
+                    && time < e.FinishTime && time > e.StartTime);
+            if(weeklyShift != null)
+            {
+                response.Data = mapper.Map<EmployeeShift>(weeklyShift);
+                response.HttpResponseCode = 200;
+                return response;
+            }
+
+            var monthlyShift = context.EmployeeShiftsMonthly
+                .Include(e => e.GuardDoor)
+                .FirstOrDefault(e => e.EmployeeId == EmployeeId && e.DayOfMonth == time.Month 
+                    && time < e.FinishTime && time > e.StartTime);
+            if(monthlyShift != null)
+            {
+                response.Data = mapper.Map<EmployeeShift>(monthlyShift);
+                response.HttpResponseCode = 200;
+                return response;
+            }
+
+            var shift = context.EmployeeShifts
+                .Include(e => e.GuardDoor)
+                .FirstOrDefault(e => e.EmployeeId == EmployeeId && time < e.FinishTime && time > e.StartTime);
+            if(shift != null)
+            {
+                response.Data = mapper.Map<EmployeeShift>(monthlyShift);
+                response.HttpResponseCode = 200;
+                return response;
+            }
+
+            response.HttpResponseCode = 404;
+            response.Message = "There is no Current Shift";
+            return response;
+        }
+
+        public async Task<ServiceResponse<List<EntrancePermissionGetDto>>> GetEntrancePermissions()
+        {
+            var response = new ServiceResponse<List<EntrancePermissionGetDto>> ();
+
+            var id = httpContextAccessor.HttpContext!.User.FindFirstValue("ID");
+            if (id == null)
+            {
+                response.HttpResponseCode = 404;
+                response.Message = "Id claim Not Found!";
+                return response;
+            }
+
+            var data = await context.People
+                .Include(p => p.EntrancePermissions)
+                .FirstOrDefaultAsync
+                (p => p.Id.ToString() == id);
+
+            if (data == null)
+            {
+                response.HttpResponseCode = 404;
+                response.Message = "User Not Found!";
+                return response;
+            }
+
+            var permissions = data.EntrancePermissions;
+
+            if (data == null)
+            {
+                response.HttpResponseCode = 404;
+                response.Message = "There is no Entrance Permission!";
+                return response;
+            }
+
+            var dataDto = permissions.Select(p => mapper.Map<EntrancePermissionGetDto>(p)).ToList();
 
             response.Data = dataDto;
             response.HttpResponseCode = 200;

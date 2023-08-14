@@ -17,10 +17,6 @@ namespace ViunaGuard.Models
         public int OrganizationId { get; set; }
         [JsonIgnore]
         public Organization Organization { get; set; } = null!;
-        [ForeignKey("Employee")]
-        public int? EmployeeId { get; set; }
-        [JsonIgnore]
-        public Employee? Employee { get; set; }
         [Required]
         public DateTime Time { get; set; }
         [ForeignKey("Car")]

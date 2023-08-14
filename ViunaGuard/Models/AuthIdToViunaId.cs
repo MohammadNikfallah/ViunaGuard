@@ -7,6 +7,6 @@ namespace ViunaGuard.Models
     {
         public int ViunaUserId { get; set; }
         [Key]
-        public string AuthId { get; set; } = null!;
+        public Guid AuthId { get; set; } 
     }
 }

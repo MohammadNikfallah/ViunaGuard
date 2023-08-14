@@ -132,44 +132,24 @@ builder.Services.AddAuthentication()
                 }
             },
 
-            //OnTokenValidated = async ctx =>
-            //{
-            //    DataContext dbContext = new DataContext();
-            //    WebHost.CreateDefaultBuilder(args)
-            //        .UseKestrel(opt => {
-            //            var sp = opt.ApplicationServices;
-            //            using (var scope = sp.CreateScope())
-            //            {
-            //                dbContext = scope.ServiceProvider.GetService<DataContext>();
-            //            }
-            //        });
-            //    var id = await dbContext.AuthIds
-            //        .FirstOrDefaultAsync(a => a.AuthId == ctx.Principal!.Claims.FirstOrDefault(p => p.Value == "ID")!.Value);
+            OnTokenValidated = async ctx =>
+            {
+                var sp = builder.Services.BuildServiceProvider();
+                var dbContext = sp.GetService<DataContext>();
+                var id = await dbContext.AuthIds
+                    .FirstOrDefaultAsync(a => a.AuthId.ToString() == ctx.Principal!.FindFirstValue("ID"));
 
-            //    string role = "user";
-            //    var roleAdmin = ctx.Principal!.Claims.FirstOrDefault(p => p.Value == "role");
-            //    if (roleAdmin != null && roleAdmin.Value == "admin")
-            //        role = "admin";
-            //    else
-            //    {
-            //        var person = await dbContext.People
-            //            .Include(p => p.Jobs)
-            //            .FirstOrDefaultAsync(p => p.Id == id!.ViunaUserId);
-            //        var jobs = person!.Jobs.Select(j => j.EmployeeTypeId);
-            //        if (jobs.Any(j => j == 1))
-            //            role = "Guard";
-            //    }
+                File.AppendAllText("log", id.ViunaUserId.ToString() + "\n");
 
-            //    ctx.Principal = new ClaimsPrincipal(
-            //                new ClaimsIdentity(
-            //                    new Claim[]
-            //                    {
-            //                        new Claim("ID", id.ViunaUserId.ToString()),
-            //                        new Claim("Role", role)
-            //                    },
-            //                    "Cookie"
-            //                    ));
-            //}
+                ctx.Principal = new ClaimsPrincipal(
+                            new ClaimsIdentity(
+                                new Claim[]
+                                {
+                                    new Claim("ID", id.ViunaUserId.ToString())
+                                },
+                                "Cookie"
+                                ));
+            }
         };
     })
     .AddOAuth("OAuth", o =>
