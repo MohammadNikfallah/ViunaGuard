@@ -14,6 +14,7 @@ namespace ViunaGuard.Controllers
     [Route("[controller]")]
     [ApiController]
     [Authorize]
+    [Authorize(Roles = "Guard",Policy = "RoleCookie")]
     public class GuardController : ControllerBase
     {
         private readonly IGuardService guardService;
@@ -28,12 +29,11 @@ namespace ViunaGuard.Controllers
         }
 
         [HttpGet("GetEntrances")]
-        public async Task<ActionResult<List<Entrance>>> GetEntrances(DateOnly startDate,DateOnly endDate
-            , [Required] int employeeId, int doorId, int personId
-            , int organizationId, int carId, int guardId, int entranceTypeId, int enterOrExitId)
+        public async Task<ActionResult<List<EntranceGetDto>>> GetEntrances(DateOnly startDate, DateOnly endDate, int doorId
+            , int personId, int organizationId, int carId, int guardId, int entranceTypeId, int enterOrExitId)
         {
             var response = await  guardService.GetEntrances
-                (startDate, endDate, employeeId, doorId, personId, organizationId, carId, guardId, entranceTypeId, enterOrExitId);
+                (startDate, endDate, doorId, personId, organizationId, carId, guardId, entranceTypeId, enterOrExitId);
 
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);

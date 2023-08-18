@@ -1,6 +1,7 @@
 global using ViunaGuard.Data;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
@@ -20,24 +21,37 @@ using ViunaGuard.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var client = new HttpClient();
-var request = new HttpRequestMessage()
+string responseString = "";
+
+try
 {
-    RequestUri = new Uri("https://localhost:7120/api/OAuth/PublicKey"),
-    Method = HttpMethod.Get
-};
-var response = await client.SendAsync(request);
-var responseString = await response.Content.ReadAsStringAsync();
+    var client = new HttpClient();
+    var request = new HttpRequestMessage()
+    {
+        RequestUri = new Uri("https://localhost:7120/api/OAuth/PublicKey"),
+        Method = HttpMethod.Get
+    };
+    var response = await client.SendAsync(request);
+    responseString = await response.Content.ReadAsStringAsync();
+}
+catch (Exception e)
+{
+    //  Block of code to handle errors
+}
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IGuardService, GuardService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddAuthentication()
+    .AddCookie("RoleCookie", options =>
+    {
+        options.Cookie.Name = "RC";
+    })
     .AddCookie("Cookie", options =>
     {
         options.Cookie.Name = "ClientCookie";
-        options.ExpireTimeSpan = TimeSpan.Zero;
+        options.ExpireTimeSpan = TimeSpan.Zero;     
         options.Cookie.MaxAge = options.ExpireTimeSpan;
         options.SlidingExpiration = true;
     })
@@ -77,7 +91,7 @@ builder.Services.AddAuthentication()
                                 var accessToken = tokens.RootElement.GetString("access_token");
                                 ctx.Response.Cookies.Append("VAT", accessToken!, new CookieOptions
                                 {
-                                    Expires = DateTime.Now.AddDays(10),
+                                    Expires = DateTime.Now.AddMinutes(10),
                                     HttpOnly = true,
                                     SameSite = SameSiteMode.Strict,
                                     Secure = true
@@ -91,6 +105,10 @@ builder.Services.AddAuthentication()
                                 });
                                 ctx.Token = accessToken;
                             }
+                        }
+                        else
+                        {
+                            ctx.Response.Cookies.Delete("RC");
                         }
                     }
                 }
@@ -122,14 +140,26 @@ builder.Services.AddAuthentication()
 
                         var jwt = new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
 
+                        var sp = builder.Services.BuildServiceProvider();
+                        var dbContext = sp.GetService<DataContext>();
+                        var claim = jwt.Claims.First(c => c.Type == "ID").Value;
+                        var id = await dbContext.AuthIds
+                            .FirstOrDefaultAsync(a => a.AuthId.ToString() == claim);
+
+                        File.AppendAllText("log", id.ViunaUserId.ToString() + "\n");
+
                         ctx.Principal = new ClaimsPrincipal(
-                            new ClaimsIdentity(
-                                jwt.Claims.Select(x => new Claim(x.Type, x.Value)).ToList(),
-                                "Cookie"
-                                ));
+                                    new ClaimsIdentity(
+                                        new Claim[]
+                                        {
+                                            new Claim("ID", id.ViunaUserId.ToString())
+                                        },
+                                        "Cookie"
+                                        ));
                         ctx.Success();
                     }
                 }
+                ctx.Response.Cookies.Delete("RC");
             },
 
             OnTokenValidated = async ctx =>
@@ -138,8 +168,6 @@ builder.Services.AddAuthentication()
                 var dbContext = sp.GetService<DataContext>();
                 var id = await dbContext.AuthIds
                     .FirstOrDefaultAsync(a => a.AuthId.ToString() == ctx.Principal!.FindFirstValue("ID"));
-
-                File.AppendAllText("log", id.ViunaUserId.ToString() + "\n");
 
                 ctx.Principal = new ClaimsPrincipal(
                             new ClaimsIdentity(
@@ -164,8 +192,6 @@ builder.Services.AddAuthentication()
         o.CallbackPath = "/api/custom_cb";
 
         o.UsePkce = true;
-        o.ClaimActions.MapJsonKey("sub", "sub");
-        o.ClaimActions.MapJsonKey("Id", "Id");
         o.Events.OnCreatingTicket = x =>
         {
             var payloadBase64 = x.AccessToken!.Split(".")[1];
@@ -210,6 +236,11 @@ builder.Services.AddAuthorization(o =>
         .RequireAuthenticatedUser()
         .AddAuthenticationSchemes("JwtBearer")
         .Build();
+
+    o.AddPolicy("RoleCookie", new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .AddAuthenticationSchemes("RoleCookie")
+        .Build());
 });
 
 

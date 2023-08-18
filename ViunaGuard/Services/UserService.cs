@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -66,14 +65,37 @@ namespace ViunaGuard.Services
             return response;
         }
 
-        public async Task<ServiceResponse<List<EmployeeShiftPeriodicMonthly>>> PostShiftMonthly(EmployeeShiftPeriodicMonthly shift)
+        public async Task<ServiceResponse<List<EmployeeShiftPeriodicMonthly>>> PostShiftMonthly(MonthlyShiftPostDto shift)
         {
             var response = new ServiceResponse<List<EmployeeShiftPeriodicMonthly>>();
 
-            shift.Id = await context.EmployeeShiftsMonthly.MaxAsync(p => p.Id) + 1;
-            await context.EmployeeShiftsMonthly.AddAsync(shift);
+            await context.EmployeeShiftsMonthly.AddAsync(mapper.Map<EmployeeShiftPeriodicMonthly>(shift));
             await context.SaveChangesAsync();
             var shifts = await context.EmployeeShiftsMonthly.ToListAsync();
+
+            response.Data = shifts;
+            response.HttpResponseCode=200;
+            return response;
+        }
+        public async Task<ServiceResponse<List<EmployeeShiftPeriodicWeekly>>> PostShiftWeekly(WeeklyShiftPostDto shift)
+        {
+            var response = new ServiceResponse<List<EmployeeShiftPeriodicWeekly>>();
+
+            await context.EmployeeShiftsWeekly.AddAsync(mapper.Map<EmployeeShiftPeriodicWeekly>(shift));
+            await context.SaveChangesAsync();
+            var shifts = await context.EmployeeShiftsWeekly.ToListAsync();
+
+            response.Data = shifts;
+            response.HttpResponseCode=200;
+            return response;
+        }
+        public async Task<ServiceResponse<List<EmployeeShift>>> PostShift(ShiftPostDto shift)
+        {
+            var response = new ServiceResponse<List<EmployeeShift>>();
+
+            await context.EmployeeShifts.AddAsync(mapper.Map<EmployeeShift>(shift));
+            await context.SaveChangesAsync();
+            var shifts = await context.EmployeeShifts.ToListAsync();
 
             response.Data = shifts;
             response.HttpResponseCode=200;

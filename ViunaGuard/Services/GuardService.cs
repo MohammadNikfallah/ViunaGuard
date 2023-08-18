@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 using ViunaGuard.Dtos;
 using ViunaGuard.Models;
 
@@ -20,16 +21,14 @@ namespace ViunaGuard.Services
             this.httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<ServiceResponse<List<EntranceGetDto>>> GetEntrances(DateOnly startDate, DateOnly endDate
-            , [Required] int employeeId, int doorId, int personId
-            , int organizationId, int carId, int guardId, int entranceTypeId, int enterOrExitId)
+        public async Task<ServiceResponse<List<EntranceGetDto>>> GetEntrances(DateOnly startDate, DateOnly endDate, int doorId
+            , int personId, int organizationId, int carId, int guardId, int entranceTypeId, int enterOrExitId)
         {
             var response = new ServiceResponse<List<EntranceGetDto>>();
 
-            var employee = await context.Employees.FirstAsync(e => e.Id == employeeId);
+            var employee = await context.Employees.FindAsync(httpContextAccessor.HttpContext.User.FindFirstValue("EmployeeId"));
 
-            if (employee.PersonId.ToString() != httpContextAccessor.HttpContext.User.Claims.First(c => c.Type == "ID").Value
-                && employee.EmployeeTypeId != context.EmployeeTypes.First(e => e.Type == "Guard").Id)
+            if (employee.PersonId.ToString() != httpContextAccessor.HttpContext.User.Claims.First(c => c.Type == "ID").Value)
             {
                 response.HttpResponseCode = 400;
                 response.Message = "Something wrong with EmployeeID";

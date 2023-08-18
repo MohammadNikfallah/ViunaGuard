@@ -50,7 +50,7 @@ namespace ViunaGuard.Controllers
         }
 
         [HttpPost("PostShiftMonthly")]
-        public async Task<ActionResult<List<EmployeeShift>>> PostShiftMonthly(EmployeeShiftPeriodicMonthly shift)
+        public async Task<ActionResult<List<EmployeeShiftPeriodicMonthly>>> PostShiftMonthly(MonthlyShiftPostDto shift)
         {
             var response = await userService.PostShiftMonthly(shift);
             if (response.HttpResponseCode == 200)
@@ -60,6 +60,30 @@ namespace ViunaGuard.Controllers
             else
                 return BadRequest(response.Message);
         }
+
+        //[HttpPost("PostShiftWeekly")]
+        //public async Task<ActionResult<List<EmployeeShiftPeriodicWeekly>>> PostShiftWeekly(WeeklyShiftPostDto shift)
+        //{
+        //    var response = await userService.PostShiftWeekly(shift);
+        //    if (response.HttpResponseCode == 200)
+        //        return Ok(response.Data);
+        //    else if (response.HttpResponseCode == 404)
+        //        return NotFound(response.Message);
+        //    else
+        //        return BadRequest(response.Message);
+        //}
+
+        //[HttpPost("PostShiftMonthly")]
+        //public async Task<ActionResult<List<EmployeeShiftPeriodicMonthly>>> PostShiftMonthly(ShiftPostDto shift)
+        //{
+        //    var response = await userService.PostShift(shift);
+        //    if (response.HttpResponseCode == 200)
+        //        return Ok(response.Data);
+        //    else if (response.HttpResponseCode == 404)
+        //        return NotFound(response.Message);
+        //    else
+        //        return BadRequest(response.Message);
+        //}
 
         [HttpGet("GetOrganizationSignatureNeed")]
         public async Task<ActionResult<List<SignatureNeedForEntrancePermission>>> GetOrganizationSignatureNeed
