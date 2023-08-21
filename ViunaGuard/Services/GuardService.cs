@@ -1,7 +1,5 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using ViunaGuard.Dtos;
 using ViunaGuard.Models;
@@ -10,15 +8,15 @@ namespace ViunaGuard.Services
 {
     public class GuardService : IGuardService
     {
-        private readonly DataContext context;
-        private readonly IMapper mapper;
-        private readonly IHttpContextAccessor httpContextAccessor;
+        private readonly DataContext _context;
+        private readonly IMapper _mapper;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public GuardService(DataContext context, IMapper mapper, IHttpContextAccessor httpContextAccessor)
         {
-            this.context = context;
-            this.mapper = mapper;
-            this.httpContextAccessor = httpContextAccessor;
+            _context = context;
+            _mapper = mapper;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<ServiceResponse<List<EntranceGetDto>>> GetEntrances(DateOnly startDate, DateOnly endDate, int doorId
@@ -26,16 +24,16 @@ namespace ViunaGuard.Services
         {
             var response = new ServiceResponse<List<EntranceGetDto>>();
 
-            var employee = await context.Employees.FindAsync(httpContextAccessor.HttpContext.User.FindFirstValue("EmployeeId"));
+            var employee = await _context.Employees.FindAsync(_httpContextAccessor.HttpContext!.User.FindFirstValue("GuardId"));
 
-            if (employee.PersonId.ToString() != httpContextAccessor.HttpContext.User.Claims.First(c => c.Type == "ID").Value)
+            if (employee!.PersonId.ToString() != _httpContextAccessor.HttpContext.User.Claims.First(c => c.Type == "ID").Value)
             {
                 response.HttpResponseCode = 400;
                 response.Message = "Something wrong with EmployeeID";
                 return response;
             }
 
-            var entrances = context.Entrances.Where(e => e.OrganizationId == employee.OrganizationId);
+            var entrances = _context.Entrances.Where(e => e.OrganizationId == employee.OrganizationId);
             if (startDate != DateOnly.MinValue && endDate != DateOnly.MinValue)
                 entrances = entrances.Where(e => e.Time.Date >= startDate.ToDateTime(TimeOnly.MinValue).Date 
                     && e.Time.Date < endDate.ToDateTime(TimeOnly.MaxValue).Date);
@@ -58,35 +56,40 @@ namespace ViunaGuard.Services
                 .Include(e => e.EntranceType)
                 .Include(e => e.EnterOrExit)
                 .Include(e => e.Door)
-                .Select(e => mapper.Map<EntranceGetDto>(e)).ToListAsync();
+                .Select(e => _mapper.Map<EntranceGetDto>(e)).ToListAsync();
 
             response.HttpResponseCode = 200;
             return response;
         }
 
 
-        public async Task<ServiceResponse<Entrance>> PostEntrance(EntrancePostDto entrancePostDto, int employeeId)
+        public async Task<ServiceResponse<Entrance>> PostEntrance(EntrancePostDto entrancePostDto)
         {
             var response = new ServiceResponse<Entrance>();
 
-            var entrance = mapper.Map<Entrance>(entrancePostDto);
-            var person = await context.People
-                .Include(s => s.Jobs)
-                .FirstAsync(p => p.Id.ToString() == httpContextAccessor.HttpContext.User.Claims.First(c => c.Type == "ID").Value);
+            var entrance = _mapper.Map<Entrance>(entrancePostDto);
 
-            var org = person.Jobs
-                .FirstOrDefault(j => j.OrganizationId == entrance.OrganizationId
-                        && j.EmployeeTypeId == context.EmployeeTypes.First(e => e.Type == "Guard").Id);
+            var guardId = _httpContextAccessor.HttpContext!.User.FindFirstValue("GuardId");
+            var guardEmployee = await _context.Employees.FindAsync(guardId);
 
-            if (org == null)
+            if (guardEmployee == null)
             {
                 response.HttpResponseCode = 400;
-                response.Message = "Something wrong with organizationId";
+                response.Message = "Something is wrong with EmployeeId";
                 return response;
             }
 
-            await context.Entrances.AddAsync(entrance);
-            await context.SaveChangesAsync();
+            if (guardEmployee.OrganizationId != entrance.OrganizationId)
+            {
+                response.HttpResponseCode = 400;
+                response.Message = "You cant add entrance on this organization!";
+                return response;
+            }
+
+            entrance.GuardId = int.Parse(guardId!);
+
+            await _context.Entrances.AddAsync(entrance);
+            await _context.SaveChangesAsync();
 
             response.HttpResponseCode = 200;
             response.Data = entrance;
@@ -94,47 +97,49 @@ namespace ViunaGuard.Services
         }
 
         public async Task<ServiceResponse<object>> PostSameGroupEntrances
-            (List<EntrancePostDto> entrancePostDtos, int driverID, [Required] int employeeId)
+            (EntranceGroupPostDto entranceGroupPost)
         {
+
             var response = new ServiceResponse<object>();
 
-            var person = await context.People
-                .Include(s => s.Jobs)
-                .FirstAsync(p => p.Id.ToString() == httpContextAccessor.HttpContext!.User.FindFirst("ID")!.Value);
-
-            var entranceGroup = new EntranceGroupPostDto
+            var entranceGroup = new EntranceGroup
             {
-                OrganizationId = entrancePostDtos[0].OrganizationId,
-                CarId = entrancePostDtos[0].CarId,
-                DriverId = driverID
+                OrganizationId = entranceGroupPost.Entrances[0].OrganizationId,
+                CarId = entranceGroupPost.Entrances[0].CarId,
+                DriverId = entranceGroupPost.DriverId
             };
 
-            var entranceGroupContext = await context.EntranceGroups.AddAsync(mapper.Map<EntranceGroup>(entranceGroup));
+            var entranceGroupContext = await _context.EntranceGroups.AddAsync(entranceGroup);
             var id = entranceGroupContext.Entity.Id;
 
-            
 
-            foreach (var entranceDto in entrancePostDtos)
+            var guardId = _httpContextAccessor.HttpContext!.User.FindFirstValue("GuardId");
+            var guardEmployee = await _context.Employees.FindAsync(guardId);
+
+            if (guardEmployee == null)
             {
-                var entrance = mapper.Map<Entrance>(entranceDto);
-                var org = person.Jobs
-                    .FirstOrDefault(j => j.OrganizationId == entrance.OrganizationId
-                            && j.EmployeeTypeId == context.EmployeeTypes.First(e => e.Type == "Guard").Id);
-
-                entrance.GuardId = employeeId;
-                entrance.EntranceGroupId = id;
-
-                if (org == null)
-                {
-                    response.HttpResponseCode = 400;
-                    response.Message = "Something wrong with organizationId";
-                    return response;
-                }
-
-                await context.Entrances.AddAsync(entrance);
+                response.HttpResponseCode = 400;
+                response.Message = "Something is wrong with EmployeeId";
+                return response;
             }
 
-            await context.SaveChangesAsync();
+            foreach (var entranceDto in entranceGroupPost.Entrances)
+            {
+                var entrance = _mapper.Map<Entrance>(entranceDto);
+
+                if (guardEmployee.OrganizationId != entrance.OrganizationId)
+                {
+                    response.HttpResponseCode = 400;
+                    response.Message = "You cant add entrance on this organization!";
+                    return response;
+                }
+                entrance.GuardId = int.Parse(guardId!);
+                entrance.EntranceGroupId = id;
+
+                await _context.Entrances.AddAsync(entrance);
+            }
+
+            await _context.SaveChangesAsync();
             response.HttpResponseCode = 200;
             return response;
         }

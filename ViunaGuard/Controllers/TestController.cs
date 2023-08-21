@@ -1,9 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using ViunaGuard.Dtos;
 using ViunaGuard.Models;
 
@@ -14,20 +12,20 @@ namespace ViunaGuard.Controllers
     [Authorize]
     public class TestController : ControllerBase
     {
-        private readonly DataContext context;
-        private readonly IMapper mapper;
+        private readonly DataContext _context;
+        private readonly IMapper _mapper;
 
         public TestController(DataContext context, IMapper mapper)
         {
-            this.context = context;
-            this.mapper = mapper;
+            _context = context;
+            _mapper = mapper;
             
         }
 
         [HttpGet("GetCar")]
         public async Task<ActionResult<List<Car>>> GetCar()
         {
-            var cars = await context.Cars.ToListAsync();
+            var cars = await _context.Cars.ToListAsync();
             return Ok(cars);
         }
 
@@ -35,17 +33,17 @@ namespace ViunaGuard.Controllers
         [HttpGet("GetPeople")]
         public async Task<ActionResult<List<Person>>> GetPeople()
         {
-            var people = await context.People
+            var people = await _context.People
                 .Include(p => p.Cars)
                 .Include(p => p.Jobs)
-                .Select(p => mapper.Map<PersonGetDto>(p)).ToListAsync();
+                .Select(p => _mapper.Map<PersonGetDto>(p)).ToListAsync();
             return Ok(people);
         }
 
         [HttpGet("GetPerson")]
         public async Task<ActionResult<Person>> GetPerson(int id)
         {
-            var people = await context.People.FirstOrDefaultAsync(p => p.Id == id);
+            var people = await _context.People.FirstOrDefaultAsync(p => p.Id == id);
             return Ok(people);
         }
 

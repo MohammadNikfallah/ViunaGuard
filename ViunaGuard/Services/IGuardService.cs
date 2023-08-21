@@ -1,7 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
-using ViunaGuard.Dtos;
+﻿using ViunaGuard.Dtos;
 using ViunaGuard.Models;
 
 namespace ViunaGuard.Services
@@ -10,8 +7,8 @@ namespace ViunaGuard.Services
     {
         public Task<ServiceResponse<List<EntranceGetDto>>> GetEntrances(DateOnly startDate, DateOnly endDate, int doorId
             , int personId, int organizationId, int carId, int guardId, int entranceTypeId, int enterOrExitId);
-        public Task<ServiceResponse<Entrance>> PostEntrance(EntrancePostDto entrancePostDto, int employeeId);
+        public Task<ServiceResponse<Entrance>> PostEntrance(EntrancePostDto entrancePostDto);
         public Task<ServiceResponse<object>> PostSameGroupEntrances
-            (List<EntrancePostDto> entrancePostDtos, int driverID, [Required] int employeeId);
+            (EntranceGroupPostDto entranceGroupPost);
     }
 }

@@ -1,8 +1,5 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using ViunaGuard.Dtos;
 using ViunaGuard.Models;
 using ViunaGuard.Services;
@@ -14,21 +11,19 @@ namespace ViunaGuard.Controllers
     [Authorize]
     public class UserController : ControllerBase
     {
-        private readonly IUserService userService;
-        private readonly DataContext context;
-        private readonly IMapper mapper;
+        private readonly IUserService _userService;
+        private readonly DataContext _context;
 
-        public UserController(IUserService userService, DataContext context, IMapper mapper)
+        public UserController(IUserService userService, DataContext context)
         {
-            this.userService = userService;
-            this.context = context;
-            this.mapper = mapper;
+            _userService = userService;
+            _context = context;
         }
 
         [HttpPost("postCar")]
-        public async Task<ActionResult<Person>> PostCar(Car car, int PersonId)
+        public async Task<ActionResult<Person>> PostCar(Car car, int personId)
         {
-            var response = await userService.PostCar(car, PersonId);
+            var response = await _userService.PostCar(car, personId);
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
             else if (response.HttpResponseCode == 404)
@@ -40,7 +35,7 @@ namespace ViunaGuard.Controllers
         [HttpPost("postPerson")]
         public async Task<ActionResult<List<Person>>> PostPerson(PersonPostDto personDto)
         {
-            var response = await userService.PostPerson(personDto);
+            var response = await _userService.PostPerson(personDto);
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
             else if (response.HttpResponseCode == 404)
@@ -52,7 +47,7 @@ namespace ViunaGuard.Controllers
         [HttpPost("PostShiftMonthly")]
         public async Task<ActionResult<List<EmployeeShiftPeriodicMonthly>>> PostShiftMonthly(MonthlyShiftPostDto shift)
         {
-            var response = await userService.PostShiftMonthly(shift);
+            var response = await _userService.PostShiftMonthly(shift);
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
             else if (response.HttpResponseCode == 404)
@@ -89,7 +84,7 @@ namespace ViunaGuard.Controllers
         public async Task<ActionResult<List<SignatureNeedForEntrancePermission>>> GetOrganizationSignatureNeed
             (int organizationId)
         {
-            var response = await userService.GetOrganizationSignatureNeed(organizationId);
+            var response = await _userService.GetOrganizationSignatureNeed(organizationId);
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
             else if (response.HttpResponseCode == 404)
@@ -101,7 +96,7 @@ namespace ViunaGuard.Controllers
         [HttpGet("GetOrganizationAuthorities")]
         public async Task<ActionResult<List<Authority>>> GetOrganizationAuthorities(int organizationId)
         {
-            var response = await userService.GetOrganizationAuthorities(organizationId);
+            var response = await _userService.GetOrganizationAuthorities(organizationId);
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
             else if (response.HttpResponseCode == 404)
@@ -113,7 +108,7 @@ namespace ViunaGuard.Controllers
         [HttpGet("GetPersonDetails")]
         public async Task<ActionResult<Person>> GetPersonDetails()
         {
-            var response = await userService.GetPersonDetails();
+            var response = await _userService.GetPersonDetails();
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
             else if (response.HttpResponseCode == 404)
@@ -123,9 +118,9 @@ namespace ViunaGuard.Controllers
         }
 
         [HttpGet("GetCurrentShift")]
-        public async Task<ActionResult<EmployeeShift>> GetCurrentShift(int EmployeeId)
+        public async Task<ActionResult<EmployeeShift>> GetCurrentShift(int employeeId)
         {
-            var response = await userService.GetCurrentShift(EmployeeId);
+            var response = await _userService.GetCurrentShift(employeeId);
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
             else if (response.HttpResponseCode == 404)
@@ -137,7 +132,7 @@ namespace ViunaGuard.Controllers
         [HttpGet("GetEntrancePermissions")]
         public async Task<ActionResult<List<EntrancePermissionGetDto>>> GetEntrancePermissions()
         {
-            var response = await userService.GetEntrancePermissions();
+            var response = await _userService.GetEntrancePermissions();
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
             else if (response.HttpResponseCode == 404)

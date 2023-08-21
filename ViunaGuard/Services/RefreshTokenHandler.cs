@@ -5,7 +5,7 @@ namespace ViunaGuard.Services
 {
     public class RefreshTokenHandlerClass
     {
-        public static async Task<JsonDocument> RefreshTokenHandler(RTRequest request)
+        public static async Task<JsonDocument> RefreshTokenHandler(RtRequest request)
         {
             var tokenRequestParameters = new Dictionary<string, string>()
             {
@@ -15,7 +15,7 @@ namespace ViunaGuard.Services
                 { "grant_type", "refresh_token" },
             };
 
-            var requestContent = new FormUrlEncodedContent(tokenRequestParameters!);
+            var requestContent = new FormUrlEncodedContent(tokenRequestParameters);
 
             var http = new HttpClient();
 
@@ -31,7 +31,7 @@ namespace ViunaGuard.Services
 
     }
 
-    public class RTRequest
+    public class RtRequest
     {
         public string ClientId { get; set; } = null!;
         public string ClientSecret { get; set; } = null!;

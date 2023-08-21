@@ -1,12 +1,7 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
 using ViunaGuard.Dtos;
 using ViunaGuard.Models;
-using ViunaGuard.Models.Enums;
 using ViunaGuard.Services;
 
 namespace ViunaGuard.Controllers
@@ -14,25 +9,23 @@ namespace ViunaGuard.Controllers
     [Route("[controller]")]
     [ApiController]
     [Authorize]
-    [Authorize(Roles = "Guard",Policy = "RoleCookie")]
+    [Authorize(Roles = "Guard", Policy = "RoleCookie")]
     public class GuardController : ControllerBase
     {
-        private readonly IGuardService guardService;
-        private readonly DataContext context;
-        private readonly IMapper mapper;
+        private readonly IGuardService _guardService;
+        private readonly DataContext _context;
 
-        public GuardController(IGuardService guardService, DataContext context, IMapper mapper)
+        public GuardController(IGuardService guardService, DataContext context)
         {
-            this.guardService = guardService;
-            this.context = context;
-            this.mapper = mapper;
+            _guardService = guardService;
+            _context = context;
         }
 
         [HttpGet("GetEntrances")]
         public async Task<ActionResult<List<EntranceGetDto>>> GetEntrances(DateOnly startDate, DateOnly endDate, int doorId
             , int personId, int organizationId, int carId, int guardId, int entranceTypeId, int enterOrExitId)
         {
-            var response = await  guardService.GetEntrances
+            var response = await  _guardService.GetEntrances
                 (startDate, endDate, doorId, personId, organizationId, carId, guardId, entranceTypeId, enterOrExitId);
 
             if (response.HttpResponseCode == 200)
@@ -44,9 +37,9 @@ namespace ViunaGuard.Controllers
         }
 
         [HttpPost("PostEntrance")]
-        public async Task<ActionResult<Entrance>> PostEntrance(EntrancePostDto entrancePostDto,[Required] int employeeId)
+        public async Task<ActionResult<Entrance>> PostEntrance(EntrancePostDto entrancePostDto)
         {
-            var response = await guardService.PostEntrance(entrancePostDto, employeeId);
+            var response = await _guardService.PostEntrance(entrancePostDto);
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
             else if (response.HttpResponseCode == 404)
@@ -58,17 +51,18 @@ namespace ViunaGuard.Controllers
         [HttpGet("GetCar")]
         public async Task<ActionResult<Car>> GetCar(int carId)
         {
-            var car = await context.Cars.FindAsync(carId);
+            var car = await _context.Cars.FindAsync(carId);
             if (car == null)
                 return NotFound("Car not Found!");
             return Ok(car);
         }
         
-        [HttpGet("PostSameGroupEntrances")]
+        [HttpPost("PostSameGroupEntrances")]
         public async Task<ActionResult> PostSameGroupEntrances
-            (List<EntrancePostDto> entrancePostDtos, int driverID, [Required] int employeeId)
+            (EntranceGroupPostDto entranceGroupPost)
         {
-            var response = await guardService.PostSameGroupEntrances(entrancePostDtos, driverID, employeeId);
+            System.IO.File.AppendAllText("log", "here\n");
+            var response = await _guardService.PostSameGroupEntrances(entranceGroupPost);
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
             else if (response.HttpResponseCode == 404)

@@ -1,12 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Net;
 using System.Security.Claims;
-using ViunaGuard.Models;
 
 namespace ViunaGuard.Controllers
 {
@@ -14,48 +10,56 @@ namespace ViunaGuard.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly DataContext context;
+        private readonly DataContext _context;
 
         public AuthController(DataContext context)
         {
-            this.context = context;
+            _context = context;
         }
-        [HttpGet]
+        
+        [HttpGet("Login")]
         public IResult Login()
         {
             return Results.Challenge(
-                new Microsoft.AspNetCore.Authentication.AuthenticationProperties()
+                new AuthenticationProperties()
                 {
                     RedirectUri = "https://localhost:7063/"
                 },
                 authenticationSchemes: new List<string>() { "OAuth" });
         }
+        
+        [HttpGet("Logout")]
+        public ActionResult Logout()
+        {
+            Response.Cookies.Delete("VRT");
+            Response.Cookies.Delete("VAT");
+            Response.Cookies.Delete("RC");
+            return Ok();
+        }
 
         [HttpGet("RoleLogin")]
         [Authorize]
-        public async Task<ActionResult> RoleLogin(int EmployeeId)
+        public async Task<ActionResult> RoleLogin(int employeeId)
         {
-            var job = context.Employees.Find(EmployeeId);
+            var job = _context.Employees.Find(employeeId);
             if (job != null && job.PersonId.ToString() == HttpContext.User.FindFirstValue("ID"))
             {
                 await HttpContext.SignInAsync("RoleCookie",
                 new ClaimsPrincipal(
-                    new ClaimsIdentity(new Claim[]
+                    new ClaimsIdentity(new[]
                     {
                         new Claim(ClaimTypes.Role, "Guard"),
-                        new Claim("EmployeeId", EmployeeId.ToString()),
-                    }, CookieAuthenticationDefaults.AuthenticationScheme)));
-                return Ok();
-            } else
-            {
-                await HttpContext.SignInAsync("RoleCookie",
-                new ClaimsPrincipal(
-                    new ClaimsIdentity(new Claim[]
-                    {
-                        new Claim(ClaimTypes.Role, "User"),
+                        new Claim("EmployeeId", employeeId.ToString()),
                     }, CookieAuthenticationDefaults.AuthenticationScheme)));
                 return Ok();
             }
+            await HttpContext.SignInAsync("RoleCookie",
+            new ClaimsPrincipal(
+                new ClaimsIdentity(new Claim[]
+                {
+                    new(ClaimTypes.Role, "User"),
+                }, CookieAuthenticationDefaults.AuthenticationScheme)));
+            return Ok();
         }
 
         [HttpGet("Test")]

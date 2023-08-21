@@ -1,20 +1,13 @@
 global using ViunaGuard.Data;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Writers;
 using Swashbuckle.AspNetCore.Filters;
-using System;
-using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text.Json;
 using ViunaGuard.Services;
@@ -36,7 +29,7 @@ try
 }
 catch (Exception e)
 {
-    //  Block of code to handle errors
+    File.AppendAllText("log","couldn't grab key: " + e.Message + "\n");
 }
 
 builder.Services.AddHttpContextAccessor();
@@ -78,38 +71,35 @@ builder.Services.AddAuthentication()
         {
             OnMessageReceived = async ctx =>
             {
-                if (ctx != null)
-                {
-                    if (ctx.Token == null) {
-                        if (ctx.Request.Cookies.ContainsKey("VAT"))
-                            ctx.Token = ctx.Request.Cookies["VAT"];
-                        else if (ctx.Request.Cookies.ContainsKey("VRT"))
+                if (ctx.Token == null) {
+                    if (ctx.Request.Cookies.ContainsKey("VAT"))
+                        ctx.Token = ctx.Request.Cookies["VAT"];
+                    else if (ctx.Request.Cookies.ContainsKey("VRT"))
+                    {
+                        var tokens = await AccessRefresh(ctx.Request.Cookies["VRT"]!);
+                        if (tokens != null)
                         {
-                            var tokens = await AccessRefresh(ctx.Request.Cookies["VRT"]!);
-                            if (tokens != null)
+                            var accessToken = tokens.RootElement.GetString("access_token");
+                            ctx.Response.Cookies.Append("VAT", accessToken!, new CookieOptions
                             {
-                                var accessToken = tokens.RootElement.GetString("access_token");
-                                ctx.Response.Cookies.Append("VAT", accessToken!, new CookieOptions
-                                {
-                                    Expires = DateTime.Now.AddMinutes(10),
-                                    HttpOnly = true,
-                                    SameSite = SameSiteMode.Strict,
-                                    Secure = true
-                                });
-                                ctx.Response.Cookies.Append("VRT", tokens.RootElement.GetString("refresh_token")!, new CookieOptions
-                                {
-                                    Expires = DateTime.Now.AddDays(30),
-                                    HttpOnly = true,
-                                    SameSite = SameSiteMode.Strict,
-                                    Secure = true
-                                });
-                                ctx.Token = accessToken;
-                            }
+                                Expires = DateTime.Now.AddMinutes(10),
+                                HttpOnly = true,
+                                SameSite = SameSiteMode.Strict,
+                                Secure = true
+                            });
+                            ctx.Response.Cookies.Append("VRT", tokens.RootElement.GetString("refresh_token")!, new CookieOptions
+                            {
+                                Expires = DateTime.Now.AddDays(30),
+                                HttpOnly = true,
+                                SameSite = SameSiteMode.Strict,
+                                Secure = true
+                            });
+                            ctx.Token = accessToken;
                         }
-                        else
-                        {
-                            ctx.Response.Cookies.Delete("RC");
-                        }
+                    }
+                    else
+                    {
+                        ctx.Response.Cookies.Delete("RC");
                     }
                 }
             },
@@ -166,17 +156,24 @@ builder.Services.AddAuthentication()
             {
                 var sp = builder.Services.BuildServiceProvider();
                 var dbContext = sp.GetService<DataContext>();
-                var id = await dbContext.AuthIds
+                var id = await dbContext!.AuthIds
                     .FirstOrDefaultAsync(a => a.AuthId.ToString() == ctx.Principal!.FindFirstValue("ID"));
 
-                ctx.Principal = new ClaimsPrincipal(
-                            new ClaimsIdentity(
-                                new Claim[]
-                                {
-                                    new Claim("ID", id.ViunaUserId.ToString())
-                                },
-                                "Cookie"
-                                ));
+                if (id == null)
+                {
+                    ctx.Fail(new Exception("you need to register in ViunaGuard"));
+                }
+                else
+                {
+                    ctx.Principal = new ClaimsPrincipal(
+                        new ClaimsIdentity(
+                            new Claim[]
+                            {
+                                new Claim("ID", id.ViunaUserId.ToString())
+                            },
+                            "Cookie"
+                        ));
+                }
             }
         };
     })
@@ -207,8 +204,6 @@ builder.Services.AddAuthentication()
     });
 
 builder.Services.AddControllers()
-    //.AddNewtonsoftJson(options =>
-    //options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore)
     .AddJsonOptions(o =>
     {
         o.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault;
@@ -262,8 +257,8 @@ app.Run();
 
 async Task<JsonDocument> AccessRefresh(string refreshToken)
 {
-    File.AppendAllText("log", DateTime.Now.ToString() + " : refreshing the access token\n");
-    var request = new RTRequest()
+    File.AppendAllText("log", DateTime.Now + " : refreshing the access token\n");
+    var request = new RtRequest()
     {
         ClientId = "12345",
         ClientSecret = "secretTest",
