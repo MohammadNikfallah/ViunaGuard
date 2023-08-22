@@ -13,32 +13,15 @@ namespace ViunaGuard.Models
         public int PersonId { get; set; }
         [JsonIgnore]
         public Person? Person { get; set; }
-        [Required, ForeignKey("Organization")]
-        public int OrganizationId { get; set; }
-        [JsonIgnore]
-        public Organization Organization { get; set; } = null!;
-        [Required]
-        public DateTime Time { get; set; }
         [ForeignKey("Car")]
         public int? CarId { get; set; }
         [JsonIgnore]
         public Car? Car { get; set; }
         public int? GuestCount { get; set; }
-        [Required, ForeignKey("Guard")]
-        public int GuardId { get; set; }
-        [JsonIgnore]
-        public Employee Guard { get; set; } = null!;
-        [Required, ForeignKey("Door")]
-        public int DoorId { get; set; }
-        [JsonIgnore]
-        public Door Door { get; set; } = null!;
-        [ForeignKey("EntranceGroup")]
-        public int? EntranceGroupId { get; set; }
+        [Required, ForeignKey("EntranceGroup")]
+        public int EntranceGroupId { get; set; }
         [JsonIgnore]
         public EntranceGroup? EntranceGroup { get; set; }
-        [ForeignKey("EnterOrExit")]
-        public int EnterOrExitId { get; set; }
-        public EnterOrExit? EnterOrExit{ get; set; }
         public bool IsDriver { get; set; } = false;
     }
 }

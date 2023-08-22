@@ -120,3 +120,45 @@ guardId :1
 8/21/2023 6:08:10 PM : refreshing the access token
 couldn't grab key: No connection could be made because the target machine actively refused it. (localhost:7120)
 8/22/2023 9:46:34 AM : refreshing the access token
+couldn't grab key: No connection could be made because the target machine actively refused it. (localhost:7120)
+couldn't grab key: No connection could be made because the target machine actively refused it. (localhost:7120)
+couldn't grab key: No connection could be made because the target machine actively refused it. (localhost:7120)
+8/22/2023 12:07:43 PM : refreshing the access token
+guardId :1
+guardId :1
+guardId :1
+8/22/2023 12:18:34 PM : refreshing the access token
+guardId :1
+guardId :1
+8/22/2023 12:28:48 PM : refreshing the access token
+8/22/2023 12:30:08 PM : refreshing the access token
+8/22/2023 12:30:40 PM : refreshing the access token
+couldn't grab key: No connection could be made because the target machine actively refused it. (192.168.0.107:7121)
+couldn't grab key: No connection could be made because the target machine actively refused it. (192.168.0.107:7121)
+8/22/2023 2:39:52 PM : refreshing the access token
+6
+8/22/2023 2:52:20 PM : refreshing the access token
+8/22/2023 2:59:40 PM : refreshing the access token
+6
+8/22/2023 3:00:09 PM : refreshing the access token
+6
+8/22/2023 3:00:13 PM : refreshing the access token
+6
+8/22/2023 3:03:42 PM : refreshing the access token
+8/22/2023 3:53:54 PM: couldn't grab key: No connection could be made because the target machine actively refused it. (192.168.0.107:7121)
+8/22/2023 3:54:46 PM: couldn't grab key: No connection could be made because the target machine actively refused it. (192.168.0.107:7121)
+{"type":"https://tools.ietf.org/html/rfc7231#section-6.5.13","title":"Unsupported Media Type","status":415,"traceId":"00-bb398d7c53d02cd1e8b6ad1577859f86-6dc4e0517c64e3c6-00"}8/22/2023 4:06:23 PM: couldn't grab key: No connection could be made because the target machine actively refused it. (192.168.0.107:7121)
+8/22/2023 4:06:59 PM: couldn't grab key: No connection could be made because the target machine actively refused it. (192.168.0.107:7121)
+8/22/2023 4:09:27 PM: couldn't grab key: No connection could be made because the target machine actively refused it. (192.168.0.107:7121)
+8/22/2023 4:11:11 PM: couldn't grab key: No connection could be made because the target machine actively refused it. (192.168.0.107:7121)
+8/22/2023 4:23:02 PM: couldn't grab key: No connection could be made because the target machine actively refused it. (192.168.0.107:7121)
+8/22/2023 4:24:28 PM: couldn't grab key: No connection could be made because the target machine actively refused it. (192.168.0.107:7121)
+8/22/2023 4:25:23 PM: couldn't grab key: No connection could be made because the target machine actively refused it. (192.168.0.107:7121)
+8/22/2023 4:26:47 PM: couldn't grab key: No connection could be made because the target machine actively refused it. (192.168.0.107:7121)
+8/22/2023 4:44:21 PM: couldn't grab key: No connection could be made because the target machine actively refused it. (192.168.0.107:7121)
+8/22/2023 4:48:57 PM: couldn't grab key: No connection could be made because the target machine actively refused it. (192.168.0.107:7121)
+8/22/2023 4:55:04 PM : refreshing the access token
+8/22/2023 5:09:54 PM : refreshing the access token
+8/22/2023 5:19:59 PM : refreshing the access token
+8/22/2023 5:21:06 PM : refreshing the access token
+8/22/2023 5:37:28 PM : refreshing the access token

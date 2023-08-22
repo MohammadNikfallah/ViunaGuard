@@ -160,6 +160,14 @@ namespace ViunaGuard.Services
             }
 
             var data = await _context.People
+                .Include(p => p.Nationality)
+                .Include(p => p.Religion)
+                .Include(p => p.EducationalDegree)
+                .Include(p => p.Gender)
+                .Include(p => p.MaritalStatus)
+                .Include(p => p.CityOfResidence)
+                .Include(p => p.BirthPlaceCity)
+                .Include(p => p.MilitaryServiceStatus)
                 .FirstOrDefaultAsync
                 (p => p.Id.ToString() == id);
 

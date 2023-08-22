@@ -2,6 +2,7 @@ global using ViunaGuard.Data;
 global using ViunaGuard.Services;
 global using ViunaGuard.Models;
 global using ViunaGuard.Dtos;
+global using ViunaGuard.Models.Enums;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -17,13 +18,15 @@ using System.Text.Json;
 var builder = WebApplication.CreateBuilder(args);
 
 string responseString = "";
+string OAUTH_BASE_URL = "http://192.168.0.107:7121/";
+// string OAUTH_BASE_URL = "https://localhost:7120/";
 
 try
 {
     var client = new HttpClient();
     var request = new HttpRequestMessage()
     {
-        RequestUri = new Uri("https://localhost:7120/api/OAuth/PublicKey"),
+        RequestUri = new Uri($"{OAUTH_BASE_URL}api/OAuth/PublicKey"),
         Method = HttpMethod.Get
     };
     var response = await client.SendAsync(request);
@@ -31,7 +34,7 @@ try
 }
 catch (Exception e)
 {
-    File.AppendAllText("log","couldn't grab key: " + e.Message + "\n");
+    File.AppendAllText("log",DateTime.Now +": couldn't grab key: " + e.Message + "\n");
 }
 
 builder.Services.AddHttpContextAccessor();
@@ -46,9 +49,11 @@ builder.Services.AddAuthentication()
     .AddCookie("Cookie", options =>
     {
         options.Cookie.Name = "ClientCookie";
-        options.ExpireTimeSpan = TimeSpan.Zero;     
+        options.ExpireTimeSpan = TimeSpan.Zero;
+        options.Cookie.SameSite = SameSiteMode.None;
         options.Cookie.MaxAge = options.ExpireTimeSpan;
         options.SlidingExpiration = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
     })
     .AddJwtBearer("JwtBearer", options =>
     {
@@ -182,15 +187,17 @@ builder.Services.AddAuthentication()
     .AddOAuth("OAuth", o =>
     {
         o.SignInScheme = "Cookie";
+        o.CorrelationCookie.SameSite = SameSiteMode.None;
+        o.CorrelationCookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 
         o.ClientId = "12345";
         o.ClientSecret = "secretTest";
 
-        o.AuthorizationEndpoint = "https://localhost:7120/api/OAuth/authorize";
-        o.TokenEndpoint = "https://localhost:7120/api/OAuth/token";
+        o.AuthorizationEndpoint = $"{OAUTH_BASE_URL}api/OAuth/authorize";
+        o.TokenEndpoint = $"{OAUTH_BASE_URL}api/OAuth/token";
         o.CallbackPath = "/api/custom_cb";
 
-        o.UsePkce = true;
+        o.UsePkce = false;
         o.Events.OnCreatingTicket = x =>
         {
             var payloadBase64 = x.AccessToken!.Split(".")[1];
@@ -265,7 +272,7 @@ async Task<JsonDocument> AccessRefresh(string refreshToken)
         ClientId = "12345",
         ClientSecret = "secretTest",
         RefreshToken = refreshToken,
-        TokenEndpoint = "https://localhost:7120/api/OAuth/token"
+        TokenEndpoint = "http://192.168.0.107:7121/api/OAuth/token"
     };
 
     var tokens = await RefreshTokenHandlerClass.RefreshTokenHandler(request);

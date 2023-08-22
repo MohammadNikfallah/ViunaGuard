@@ -9,7 +9,6 @@ namespace ViunaGuard.Dtos
     public class PersonGetDto
     {
         public int Id { get; set; }
-        public int PersonAdditionalInfoId { get; set; }
         public PersonAdditionalInfo? PersonAdditionalInfo { get; set; }
         public string NationalId { get; set; } = null!;
         public string LastName { get; set; } = null!;
@@ -18,23 +17,15 @@ namespace ViunaGuard.Dtos
         public string? PhoneNumber { get; set; }
         public string? CellPhoneNumber { get; set; }
         public string? FathersName { get; set; }
-        public int? GenderId { get; set; }
-        public Gender? Gender { get; set; }
-        public int? BirthPlaceCityId { get; set; }
-        public City? BirthPlaceCity { get; set; }
+        public string? Gender { get; set; }
+        public string? BirthPlaceCity { get; set; }
         public DateOnly? BirthDay { get; set; }
-        public int? CityOfResidenceId { get; set; }
-        public City? CityOfResidence { get; set; }
-        public int? EducationalDegreeId { get; set; }
-        public EducationalDegree? EducationalDegree { get; set; }
-        public int? MilitaryServiceStatusId { get; set; }
-        public MilitaryServiceStatus? MilitaryServiceStatus { get; set; }
-        public int? NationalityId { get; set; }
-        public Nationality? Nationality { get; set; }
-        public int? ReligionId { get; set; }
-        public Religion? Religion { get; set; }
-        public int? MaritalStatusId { get; set; }
-        public MaritalStatus? MaritalStatus { get; set; }
+        public string? CityOfResidence { get; set; }
+        public string? EducationalDegree { get; set; }
+        public string? MilitaryServiceStatus { get; set; }
+        public string? Nationality { get; set; }
+        public string? Religion { get; set; }
+        public string? MaritalStatus { get; set; }
         public List<Car> Cars { get; set; } = new List<Car>();
         public List<Employee> Jobs { get; set; } = new List<Employee>();
         public List<Entrance> Entrances { get; set; } = new List<Entrance>();

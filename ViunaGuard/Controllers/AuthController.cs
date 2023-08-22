@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using System.Net;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Text.Json;
+
 
 namespace ViunaGuard.Controllers
 {
@@ -38,6 +41,51 @@ namespace ViunaGuard.Controllers
                     RedirectUri = "https://localhost:7063/"
                 },
                 authenticationSchemes: new List<string>() { "OAuth" });
+        }
+        
+        [HttpPost("Login")]
+        public async Task<ActionResult<object>> PostLogin(UserLogin userLogin)
+        {
+            var httpWebRequest = (HttpWebRequest)WebRequest.Create("https://localhost:7120/api/OAuth/login");
+            httpWebRequest.ContentType = "application/json";
+            httpWebRequest.Method = "POST";
+
+            using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+            {
+                string json = JsonSerializer.Serialize(new
+                {
+                    username = userLogin.Username,
+                    password = userLogin.Password
+                });
+
+                streamWriter.Write(json);
+            }
+
+            var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+
+            if (httpResponse.StatusCode == HttpStatusCode.OK)
+            {
+                var cookie = httpResponse.GetResponseHeader("Set-Cookie");
+                var cookieName = cookie.Split('=')[0];
+                var cookieString = cookie.Split('=')[1].Split(';')[0];
+                
+                
+                Results.Challenge(
+                    new AuthenticationProperties()
+                    {
+                        RedirectUri = "https://localhost:7063/"
+                    },
+                    authenticationSchemes: new List<string>() { "OAuth" });
+                return Ok();
+            }
+
+            return BadRequest();
+            // return Results.Challenge(
+            //     new AuthenticationProperties()
+            //     {
+            //         RedirectUri = "https://localhost:7063/"
+            //     },
+            //     authenticationSchemes: new List<string>() { "OAuth" });
         }
         /**
          *logout the user
@@ -81,7 +129,7 @@ namespace ViunaGuard.Controllers
         [Authorize(Policy = "RoleCookie")]
         public ActionResult Test()
         {
-            return Ok(HttpContext.User.Claims.Select(c => new {c.Type, c.Value}).ToList());
+            return Ok();
         }
 
 
