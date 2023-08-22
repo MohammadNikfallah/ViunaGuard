@@ -193,10 +193,6 @@ namespace ViunaGuard.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
 
@@ -226,10 +222,90 @@ namespace ViunaGuard.Migrations
                     b.HasIndex("ShiftMakerEmployeeId");
 
                     b.ToTable("EmployeeShifts");
+                });
 
-                    b.HasDiscriminator<string>("Discriminator").HasValue("EmployeeShift");
+            modelBuilder.Entity("ViunaGuard.Models.EmployeeShiftPeriodicMonthly", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.UseTphMappingStrategy();
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DayOfMonth")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FinishTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("GuardDoorId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ShiftMakerEmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("GuardDoorId");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("ShiftMakerEmployeeId");
+
+                    b.ToTable("EmployeeShiftsMonthly");
+                });
+
+            modelBuilder.Entity("ViunaGuard.Models.EmployeeShiftPeriodicWeekly", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FinishTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("GuardDoorId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ShiftMakerEmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("GuardDoorId");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("ShiftMakerEmployeeId");
+
+                    b.ToTable("EmployeeShiftsWeekly");
                 });
 
             modelBuilder.Entity("ViunaGuard.Models.Entrance", b =>
@@ -246,16 +322,10 @@ namespace ViunaGuard.Migrations
                     b.Property<int>("DoorId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("EmployeeId")
-                        .HasColumnType("int");
-
                     b.Property<int>("EnterOrExitId")
                         .HasColumnType("int");
 
                     b.Property<int?>("EntranceGroupId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("EntranceTypeId")
                         .HasColumnType("int");
 
                     b.Property<int>("GuardId")
@@ -263,6 +333,9 @@ namespace ViunaGuard.Migrations
 
                     b.Property<int?>("GuestCount")
                         .HasColumnType("int");
+
+                    b.Property<bool>("IsDriver")
+                        .HasColumnType("bit");
 
                     b.Property<int>("OrganizationId")
                         .HasColumnType("int");
@@ -279,13 +352,9 @@ namespace ViunaGuard.Migrations
 
                     b.HasIndex("DoorId");
 
-                    b.HasIndex("EmployeeId");
-
                     b.HasIndex("EnterOrExitId");
 
                     b.HasIndex("EntranceGroupId");
-
-                    b.HasIndex("EntranceTypeId");
 
                     b.HasIndex("GuardId");
 
@@ -304,20 +373,13 @@ namespace ViunaGuard.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CarId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("DriverId")
-                        .HasColumnType("int");
-
                     b.Property<int>("OrganizationId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("Time")
+                        .HasColumnType("datetime2");
+
                     b.HasKey("Id");
-
-                    b.HasIndex("CarId");
-
-                    b.HasIndex("DriverId");
 
                     b.HasIndex("OrganizationId");
 
@@ -497,23 +559,6 @@ namespace ViunaGuard.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("EnterOrExit");
-                });
-
-            modelBuilder.Entity("ViunaGuard.Models.Enums.EntranceType", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("EntranceTypes");
                 });
 
             modelBuilder.Entity("ViunaGuard.Models.Enums.Gender", b =>
@@ -826,26 +871,6 @@ namespace ViunaGuard.Migrations
                     b.ToTable("UserAccesses");
                 });
 
-            modelBuilder.Entity("ViunaGuard.Models.EmployeeShiftPeriodicMonthly", b =>
-                {
-                    b.HasBaseType("ViunaGuard.Models.EmployeeShift");
-
-                    b.Property<int>("DayOfMonth")
-                        .HasColumnType("int");
-
-                    b.HasDiscriminator().HasValue("EmployeeShiftPeriodicMonthly");
-                });
-
-            modelBuilder.Entity("ViunaGuard.Models.EmployeeShiftPeriodicWeekly", b =>
-                {
-                    b.HasBaseType("ViunaGuard.Models.EmployeeShift");
-
-                    b.Property<int>("DayOfWeek")
-                        .HasColumnType("int");
-
-                    b.HasDiscriminator().HasValue("EmployeeShiftPeriodicWeekly");
-                });
-
             modelBuilder.Entity("CarPerson", b =>
                 {
                     b.HasOne("ViunaGuard.Models.Car", null)
@@ -985,6 +1010,68 @@ namespace ViunaGuard.Migrations
                     b.Navigation("ShiftMakerEmployee");
                 });
 
+            modelBuilder.Entity("ViunaGuard.Models.EmployeeShiftPeriodicMonthly", b =>
+                {
+                    b.HasOne("ViunaGuard.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ViunaGuard.Models.Door", "GuardDoor")
+                        .WithMany()
+                        .HasForeignKey("GuardDoorId");
+
+                    b.HasOne("ViunaGuard.Models.Organization", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ViunaGuard.Models.Employee", "ShiftMakerEmployee")
+                        .WithMany()
+                        .HasForeignKey("ShiftMakerEmployeeId");
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("GuardDoor");
+
+                    b.Navigation("Organization");
+
+                    b.Navigation("ShiftMakerEmployee");
+                });
+
+            modelBuilder.Entity("ViunaGuard.Models.EmployeeShiftPeriodicWeekly", b =>
+                {
+                    b.HasOne("ViunaGuard.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ViunaGuard.Models.Door", "GuardDoor")
+                        .WithMany()
+                        .HasForeignKey("GuardDoorId");
+
+                    b.HasOne("ViunaGuard.Models.Organization", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ViunaGuard.Models.Employee", "ShiftMakerEmployee")
+                        .WithMany()
+                        .HasForeignKey("ShiftMakerEmployeeId");
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("GuardDoor");
+
+                    b.Navigation("Organization");
+
+                    b.Navigation("ShiftMakerEmployee");
+                });
+
             modelBuilder.Entity("ViunaGuard.Models.Entrance", b =>
                 {
                     b.HasOne("ViunaGuard.Models.Car", "Car")
@@ -997,10 +1084,6 @@ namespace ViunaGuard.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ViunaGuard.Models.Employee", "Employee")
-                        .WithMany()
-                        .HasForeignKey("EmployeeId");
-
                     b.HasOne("ViunaGuard.Models.Enums.EnterOrExit", "EnterOrExit")
                         .WithMany()
                         .HasForeignKey("EnterOrExitId")
@@ -1010,12 +1093,6 @@ namespace ViunaGuard.Migrations
                     b.HasOne("ViunaGuard.Models.EntranceGroup", "EntranceGroup")
                         .WithMany("Entrances")
                         .HasForeignKey("EntranceGroupId");
-
-                    b.HasOne("ViunaGuard.Models.Enums.EntranceType", "EntranceType")
-                        .WithMany()
-                        .HasForeignKey("EntranceTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
 
                     b.HasOne("ViunaGuard.Models.Employee", "Guard")
                         .WithMany()
@@ -1039,13 +1116,9 @@ namespace ViunaGuard.Migrations
 
                     b.Navigation("Door");
 
-                    b.Navigation("Employee");
-
                     b.Navigation("EnterOrExit");
 
                     b.Navigation("EntranceGroup");
-
-                    b.Navigation("EntranceType");
 
                     b.Navigation("Guard");
 
@@ -1056,23 +1129,11 @@ namespace ViunaGuard.Migrations
 
             modelBuilder.Entity("ViunaGuard.Models.EntranceGroup", b =>
                 {
-                    b.HasOne("ViunaGuard.Models.Car", "Car")
-                        .WithMany()
-                        .HasForeignKey("CarId");
-
-                    b.HasOne("ViunaGuard.Models.Person", "Driver")
-                        .WithMany()
-                        .HasForeignKey("DriverId");
-
                     b.HasOne("ViunaGuard.Models.Organization", "Organization")
                         .WithMany()
                         .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Car");
-
-                    b.Navigation("Driver");
 
                     b.Navigation("Organization");
                 });

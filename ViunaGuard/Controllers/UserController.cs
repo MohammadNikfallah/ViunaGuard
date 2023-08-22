@@ -141,5 +141,17 @@ namespace ViunaGuard.Controllers
                 return BadRequest(response.Message);
         }
 
+        [HttpGet("GetPersonJobs")]
+        public async Task<ActionResult<List<EmployeeGetDto>>> GetPersnJobs()
+        {
+            var response = await _userService.GetPersonJobs();
+            if (response.HttpResponseCode == 200)
+                return Ok(response.Data);
+            else if (response.HttpResponseCode == 404)
+                return NotFound(response.Message);
+            else
+                return BadRequest(response.Message);
+        }
+
     }
 }

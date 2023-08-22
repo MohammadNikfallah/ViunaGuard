@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
 using ViunaGuard.Dtos;
 using ViunaGuard.Models;
 
@@ -34,7 +35,7 @@ namespace ViunaGuard.Services
             }
             p.Cars.Add(car);
             var carInList = await _context.Cars.FirstOrDefaultAsync(c => c.Id == car.Id);
-            if (carInList != null)
+            if (carInList != null)  
                 carInList.People.Add(p);
             else
             {
@@ -254,6 +255,43 @@ namespace ViunaGuard.Services
             var dataDto = permissions.Select(p => _mapper.Map<EntrancePermissionGetDto>(p)).ToList();
 
             response.Data = dataDto;
+            response.HttpResponseCode = 200;
+            return response;
+        }
+
+        public async Task<ServiceResponse<List<EmployeeGetDto>>> GetPersonJobs()
+        {
+            var response = new ServiceResponse<List<EmployeeGetDto>>();
+
+            var id = _httpContextAccessor.HttpContext!.User.FindFirstValue("ID");
+            if(id == null)
+            {
+                response.HttpResponseCode = 404;
+                response.Message = "Id claim Not Found!";
+                return response;
+            }
+
+            var person = await _context.People
+                .FirstOrDefaultAsync
+                    (p => p.Id.ToString() == id);
+
+            if(person == null)
+            {
+                response.HttpResponseCode = 404;
+                response.Message = "User Not Found!";
+                return response;
+            }
+            
+            var data = await _context.Employees
+                .Include(e => e.Authority)
+                .Include(e => e.Organization)
+                .Include(e => e.EmployeeType)
+                .Where(e => e.PersonId.ToString() == id)
+                .Select(e => _mapper.Map<EmployeeGetDto>(e))
+                .ToListAsync();
+
+
+            response.Data = data;
             response.HttpResponseCode = 200;
             return response;
         }

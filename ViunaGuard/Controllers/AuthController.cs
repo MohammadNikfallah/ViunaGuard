@@ -17,8 +17,8 @@ namespace ViunaGuard.Controllers
             _context = context;
         }
         
-        [HttpGet("Login")]
-        public IResult Login()
+        [HttpGet("GetToken")]
+        public IResult GetToken()
         {
             return Results.Challenge(
                 new AuthenticationProperties()
@@ -28,6 +28,20 @@ namespace ViunaGuard.Controllers
                 authenticationSchemes: new List<string>() { "OAuth" });
         }
         
+        [HttpGet("Login")]
+        public IResult Login()
+        {
+            
+            return Results.Challenge(
+                new AuthenticationProperties()
+                {
+                    RedirectUri = "https://localhost:7063/"
+                },
+                authenticationSchemes: new List<string>() { "OAuth" });
+        }
+        /**
+         *logout the user
+         */
         [HttpGet("Logout")]
         public ActionResult Logout()
         {
@@ -64,7 +78,7 @@ namespace ViunaGuard.Controllers
 
         [HttpGet("Test")]
         [Authorize]
-        [Authorize(Roles = "User", Policy = "RoleCookie")]
+        [Authorize(Policy = "RoleCookie")]
         public ActionResult Test()
         {
             return Ok(HttpContext.User.Claims.Select(c => new {c.Type, c.Value}).ToList());

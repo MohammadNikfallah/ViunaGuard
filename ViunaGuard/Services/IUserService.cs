@@ -15,5 +15,6 @@ namespace ViunaGuard.Services
         public Task<ServiceResponse<PersonGetDto>> GetPersonDetails();
         public Task<ServiceResponse<EmployeeShift>> GetCurrentShift(int EmployeeId);
         public Task<ServiceResponse<List<EntrancePermissionGetDto>>> GetEntrancePermissions();
+        public Task<ServiceResponse<List<EmployeeGetDto>>> GetPersonJobs();
     }
 }

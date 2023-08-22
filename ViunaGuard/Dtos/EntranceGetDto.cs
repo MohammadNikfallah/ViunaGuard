@@ -19,8 +19,8 @@ namespace ViunaGuard.Dtos
         public int? CarId { get; set; }
         public Car? Car { get; set; }
         public int? GuestCount { get; set; }
-        [JsonIgnore]
         public int GuardId { get; set; }
+        [JsonIgnore]
         public Employee Guard { get; set; } = null!;
         [JsonIgnore]
         public int DoorId { get; set; }
@@ -29,10 +29,8 @@ namespace ViunaGuard.Dtos
         public int? EntranceGroupId { get; set; }
         public EntranceGroup? EntranceGroup { get; set; }
         [JsonIgnore]
-        public int EntranceTypeId { get; set; }
-        public EntranceType? EntranceType { get; set; }
-        [JsonIgnore]
         public int EnterOrExitId { get; set; }
         public EnterOrExit? EnterOrExit { get; set; }
+        public bool IsDriver { get; set; } = false;
     }
 }

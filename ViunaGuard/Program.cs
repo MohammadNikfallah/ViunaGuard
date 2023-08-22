@@ -1,4 +1,7 @@
 global using ViunaGuard.Data;
+global using ViunaGuard.Services;
+global using ViunaGuard.Models;
+global using ViunaGuard.Dtos;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -10,7 +13,6 @@ using Swashbuckle.AspNetCore.Filters;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text.Json;
-using ViunaGuard.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

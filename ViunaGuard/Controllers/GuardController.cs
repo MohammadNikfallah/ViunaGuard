@@ -26,7 +26,7 @@ namespace ViunaGuard.Controllers
             , int personId, int organizationId, int carId, int guardId, int entranceTypeId, int enterOrExitId)
         {
             var response = await  _guardService.GetEntrances
-                (startDate, endDate, doorId, personId, organizationId, carId, guardId, entranceTypeId, enterOrExitId);
+                (startDate, endDate, doorId, personId, carId, guardId, enterOrExitId);
 
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
@@ -57,14 +57,13 @@ namespace ViunaGuard.Controllers
             return Ok(car);
         }
         
-        [HttpPost("PostSameGroupEntrances")]
+        [HttpPost("PostEntrances")]
         public async Task<ActionResult> PostSameGroupEntrances
             (EntranceGroupPostDto entranceGroupPost)
         {
-            System.IO.File.AppendAllText("log", "here\n");
             var response = await _guardService.PostSameGroupEntrances(entranceGroupPost);
             if (response.HttpResponseCode == 200)
-                return Ok(response.Data);
+                return Ok();
             else if (response.HttpResponseCode == 404)
                 return NotFound(response.Message);
             else

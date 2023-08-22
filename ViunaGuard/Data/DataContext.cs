@@ -67,7 +67,6 @@ namespace ViunaGuard.Data
         public DbSet<EducationalDegree> EducationalDegrees {  get; set; }
         public DbSet<EmployeeType> EmployeeTypes {  get; set; }
         public DbSet<EnterOrExit> EnterOrExit {  get; set; }
-        public DbSet<EntranceType> EntranceTypes {  get; set; }
         public DbSet<Gender> Genders {  get; set; }
         public DbSet<MaritalStatus> MaritalStatuses {  get; set; }
         public DbSet<MilitaryServiceStatus> MilitaryServiceStatuses {  get; set; }

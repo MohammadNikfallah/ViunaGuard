@@ -17,7 +17,7 @@ namespace ViunaGuard.Dtos
         public int GuardId { get; set; }
         [Required]
         public int DoorId { get; set; }
-        public int EntranceTypeId { get; set; }
         public int EnterOrExitId { get; set; }
+        public bool IsDriver { get; set; } = false;
     }
 }
