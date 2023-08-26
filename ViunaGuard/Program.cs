@@ -18,8 +18,8 @@ using System.Text.Json;
 var builder = WebApplication.CreateBuilder(args);
 
 string responseString = "";
-string OAUTH_BASE_URL = "http://192.168.0.107:7121/";
-// string OAUTH_BASE_URL = "https://localhost:7120/";
+// string OAUTH_BASE_URL = "http://192.168.0.107:7121/";
+string OAUTH_BASE_URL = "https://localhost:7120/";
 
 try
 {
@@ -272,7 +272,7 @@ async Task<JsonDocument> AccessRefresh(string refreshToken)
         ClientId = "12345",
         ClientSecret = "secretTest",
         RefreshToken = refreshToken,
-        TokenEndpoint = "http://192.168.0.107:7121/api/OAuth/token"
+        TokenEndpoint = $"{OAUTH_BASE_URL}api/OAuth/token"
     };
 
     var tokens = await RefreshTokenHandlerClass.RefreshTokenHandler(request);

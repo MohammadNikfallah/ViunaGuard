@@ -1,6 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ViunaGuard.Dtos;
 using ViunaGuard.Models;
 using ViunaGuard.Services;
@@ -15,11 +17,13 @@ namespace ViunaGuard.Controllers
     {
         private readonly IGuardService _guardService;
         private readonly DataContext _context;
+        private readonly IMapper _mapper;
 
-        public GuardController(IGuardService guardService, DataContext context)
+        public GuardController(IGuardService guardService, DataContext context, IMapper mapper)
         {
             _guardService = guardService;
             _context = context;
+            _mapper = mapper;
         }
 
         // [HttpGet("GetEntrances")]
@@ -75,11 +79,12 @@ namespace ViunaGuard.Controllers
         }
         
         [HttpGet("GetDoors")]
-        public async Task<ActionResult<List<Door>>> GetDoors()
+        public async Task<ActionResult<List<DoorGetDto>>> GetDoors()
         {
             var guardId = HttpContext.User.FindFirst("EmployeeId");
             var guard = await _context.Employees.FindAsync(int.Parse(guardId.Value));
-            var doors = _context.Doors.Where(d => d.OrganizationId == guard.OrganizationId);
+            var doors = await _context.Doors.Where(d => d.OrganizationId == guard.OrganizationId)
+                .Select(d => _mapper.Map<DoorGetDto>(d)).ToListAsync();
             return Ok(doors);
         }
         
@@ -94,6 +99,14 @@ namespace ViunaGuard.Controllers
                 return NotFound(response.Message);
             else
                 return BadRequest(response.Message);
+        }
+        
+        [HttpPost("GetCars")]
+        public async Task<ActionResult<List<Car>>> GetCars (string licenseNumber)
+        {
+            var response = new ServiceResponse<List<Car>>();
+            response.Data = await _context.Cars.Where(car => car.LicenseNumber == licenseNumber).ToListAsync();
+            return response.Data;
         }
     }
 }

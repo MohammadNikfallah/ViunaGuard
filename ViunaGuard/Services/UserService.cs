@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using Humanizer;
 using Microsoft.IdentityModel.Tokens;
 using ViunaGuard.Dtos;
 using ViunaGuard.Models;
@@ -21,7 +22,6 @@ namespace ViunaGuard.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        [HttpPost("postCar")]
         public async Task<ServiceResponse<Person>> PostCar(Car car, int id)
         {
             var response = new ServiceResponse<Person>();
@@ -48,7 +48,6 @@ namespace ViunaGuard.Services
             return response;
         }
 
-        [HttpPost("postPerson")]
         public async Task<ServiceResponse<List<Person>>> PostPerson(PersonPostDto personDto)
         {
             var response = new ServiceResponse<List<Person>>();
@@ -65,28 +64,14 @@ namespace ViunaGuard.Services
             response.HttpResponseCode=200;
             return response;
         }
-
-        public async Task<ServiceResponse<List<EmployeeShiftPeriodicMonthly>>> PostShiftMonthly(MonthlyShiftPostDto shift)
+        
+        public async Task<ServiceResponse<object>> PostPeriodicShift(PeriodicShiftPostDto shift)
         {
-            var response = new ServiceResponse<List<EmployeeShiftPeriodicMonthly>>();
+            var response = new ServiceResponse<object>();
 
-            await _context.EmployeeShiftsMonthly.AddAsync(_mapper.Map<EmployeeShiftPeriodicMonthly>(shift));
+            await _context.EmployeePeriodicShifts.AddAsync(_mapper.Map<EmployeePeriodicShift>(shift));
             await _context.SaveChangesAsync();
-            var shifts = await _context.EmployeeShiftsMonthly.ToListAsync();
-
-            response.Data = shifts;
-            response.HttpResponseCode=200;
-            return response;
-        }
-        public async Task<ServiceResponse<List<EmployeeShiftPeriodicWeekly>>> PostShiftWeekly(WeeklyShiftPostDto shift)
-        {
-            var response = new ServiceResponse<List<EmployeeShiftPeriodicWeekly>>();
-
-            await _context.EmployeeShiftsWeekly.AddAsync(_mapper.Map<EmployeeShiftPeriodicWeekly>(shift));
-            await _context.SaveChangesAsync();
-            var shifts = await _context.EmployeeShiftsWeekly.ToListAsync();
-
-            response.Data = shifts;
+            
             response.HttpResponseCode=200;
             return response;
         }
@@ -185,11 +170,57 @@ namespace ViunaGuard.Services
             return response;
         }
 
-        public async Task<ServiceResponse<EmployeeShift>> GetCurrentShift(int employeeId)
+        public async Task<ServiceResponse<EmployeeShiftGetDto>> GetCurrentShift(int employeeId)
         {
-            var response = new ServiceResponse<EmployeeShift>();
+            var response = new ServiceResponse<EmployeeShiftGetDto>();
             var time = DateTime.Now;
-            var person = await _context.People.FindAsync(_httpContextAccessor.HttpContext!.User.FindFirstValue("ID"));
+            var id = _httpContextAccessor.HttpContext!.User.FindFirstValue("ID");
+            var person = await _context.People.FindAsync(int.Parse(id));
+            if(person!.Jobs.Any(j => j.Id == employeeId))
+            {
+                response.HttpResponseCode = 400;
+                response.Message = "Something wrong with EmployeeId";
+                return response;
+            }
+            
+            var periodicShift = _context.EmployeePeriodicShifts
+                .Include(e => e.GuardDoor)
+                .Where(e => e.EmployeeId == employeeId);
+            var todayPeriodicShifts = periodicShift
+                .Where(e => ((time.Date.DayOfYear - e.StartTime.Date.DayOfYear) % e.PeriodDayRange) == 0);
+            var nowPeriodicShift = await todayPeriodicShifts
+                .FirstOrDefaultAsync(p => time.TimeOfDay > p.StartTime.TimeOfDay && time.TimeOfDay < p.FinishTime.TimeOfDay);
+            if (nowPeriodicShift != null)
+            {
+                response.HttpResponseCode = 200;
+                response.Data = _mapper.Map<EmployeeShiftGetDto>(nowPeriodicShift);
+                return response;
+            }
+            
+            var shift = _context.EmployeeShifts
+                .Include(e => e.GuardDoor)
+                .Where(e => e.EmployeeId == employeeId);
+            var nowShift = await shift
+                .FirstOrDefaultAsync(e => time.Date < e.FinishTime.Date && time.Date > e.StartTime.Date);
+            if (nowShift != null)
+            {
+                response.HttpResponseCode = 200;
+                response.Data = _mapper.Map<EmployeeShiftGetDto>(nowShift);
+                return response;
+            }
+            
+            response.HttpResponseCode = 404;
+            response.Message = "There is no current shift for this employee";
+            return response;
+        }
+        
+        public async Task<ServiceResponse<TwoShiftGetDto>> GetPersonShifts(int employeeId)
+        {
+            var response = new ServiceResponse<TwoShiftGetDto>();
+            response.Data = new TwoShiftGetDto();
+            var time = DateTime.Now;
+            var id = _httpContextAccessor.HttpContext!.User.FindFirstValue("ID");
+            var person = await _context.People.FindAsync(int.Parse(id));
             if(person!.Jobs.Any(j => j.Id == employeeId))
             {
                 response.HttpResponseCode = 400;
@@ -197,41 +228,36 @@ namespace ViunaGuard.Services
                 return response;
             }
 
-            var weeklyShift = _context.EmployeeShiftsWeekly
-                .Include(e => e.GuardDoor)
-                .FirstOrDefault(e => e.EmployeeId == employeeId && e.DayOfWeek == ((int)time.DayOfWeek) 
-                    && time < e.FinishTime && time > e.StartTime);
-            if(weeklyShift != null)
-            {
-                response.Data = _mapper.Map<EmployeeShift>(weeklyShift);
-                response.HttpResponseCode = 200;
-                return response;
-            }
+            response.Data.TodayShifts.AddRange(await GetDayShifts(time, employeeId));
+            response.Data.TomorrowShifts.AddRange(await GetDayShifts(time.AddDays(1), employeeId));
+            response.HttpResponseCode = 200;
+            return response;
+        }
 
-            var monthlyShift = _context.EmployeeShiftsMonthly
+        public async Task<List<EmployeeShiftGetDto>> GetDayShifts(DateTime time, int employeeId)
+        {
+            var Result = new List<EmployeeShiftGetDto>();
+            var periodicShift = _context.EmployeePeriodicShifts
                 .Include(e => e.GuardDoor)
-                .FirstOrDefault(e => e.EmployeeId == employeeId && e.DayOfMonth == time.Month 
-                    && time < e.FinishTime && time > e.StartTime);
-            if(monthlyShift != null)
+                .Where(e => e.EmployeeId == employeeId);
+            var todayPeriodicShifts = periodicShift
+                .Where(e => ((time.Date.DayOfYear - e.StartTime.Date.DayOfYear) % e.PeriodDayRange) == 0);
+            
+            var tempResult = await todayPeriodicShifts.Select(e => _mapper.Map<EmployeeShiftGetDto>(e)).ToListAsync();
+            for (int i = 0; i < tempResult.Count; i++)
             {
-                response.Data = _mapper.Map<EmployeeShift>(monthlyShift);
-                response.HttpResponseCode = 200;
-                return response;
+                tempResult[i].StartTime = tempResult[i].StartTime.AddDays(time.DayOfYear - tempResult[i].StartTime.DayOfYear);
+                tempResult[i].FinishTime = tempResult[i].FinishTime.AddDays(time.DayOfYear - tempResult[i].FinishTime.DayOfYear);
             }
+            Result.AddRange(tempResult);
 
             var shift = _context.EmployeeShifts
                 .Include(e => e.GuardDoor)
-                .FirstOrDefault(e => e.EmployeeId == employeeId && time < e.FinishTime && time > e.StartTime);
-            if(shift != null)
-            {
-                response.Data = _mapper.Map<EmployeeShift>(monthlyShift);
-                response.HttpResponseCode = 200;
-                return response;
-            }
+                .Where(e => e.EmployeeId == employeeId);
+            var nowShift = shift.Where(e => time.Date < e.FinishTime.Date && time.Date > e.StartTime.Date);
+            Result.AddRange(await nowShift.Select(e => _mapper.Map<EmployeeShiftGetDto>(e)).ToListAsync());
 
-            response.HttpResponseCode = 404;
-            response.Message = "There is no Current Shift";
-            return response;
+            return Result;
         }
 
         public async Task<ServiceResponse<List<EntrancePermissionGetDto>>> GetEntrancePermissions()

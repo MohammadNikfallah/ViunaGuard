@@ -22,17 +22,17 @@ namespace ViunaGuard
             CreateMap<Entrance, EntranceGetDto>();
             CreateMap<SignatureNeedForEntrancePermission, SignatureNeedGetDto>();
             CreateMap<EmployeeShift, EmployeeShiftGetDto>();
-            CreateMap<EmployeeShiftPeriodicMonthly, EmployeeShiftGetDto>();
-            CreateMap<EmployeeShiftPeriodicWeekly, EmployeeShiftGetDto>();
             CreateMap<EntrancePermission, EntrancePermissionGetDto>();
             CreateMap<ShiftPostDto, EmployeeShift>();
-            CreateMap<MonthlyShiftPostDto, EmployeeShiftPeriodicMonthly>();
-            CreateMap<WeeklyShiftPostDto, EmployeeShiftPeriodicWeekly>();
             CreateMap<EmployeePostDto, Employee>();
             CreateMap<Employee, EmployeeGetDto>();
             CreateMap<EntranceGroupPostDto, EntranceGroup>();
             CreateMap<EntranceGroup, EntranceGroupGetDto>();
             CreateMap<Person, PersonForEntranceGetDto>();
+            CreateMap<Door, DoorGetDto>();
+            CreateMap<EmployeePeriodicShift, PeriodicShiftGetDto>();
+            CreateMap<PeriodicShiftPostDto, EmployeePeriodicShift>();
+            CreateMap<EmployeePeriodicShift, EmployeeShiftGetDto>();
         }
     }
 }

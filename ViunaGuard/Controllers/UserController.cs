@@ -44,10 +44,10 @@ namespace ViunaGuard.Controllers
                 return BadRequest(response.Message);
         }
 
-        [HttpPost("PostShiftMonthly")]
-        public async Task<ActionResult<List<EmployeeShiftPeriodicMonthly>>> PostShiftMonthly(MonthlyShiftPostDto shift)
+        [HttpPost("PostPeriodicShift")]
+        public async Task<ActionResult> PostPeriodicShift(PeriodicShiftPostDto shift)
         {
-            var response = await _userService.PostShiftMonthly(shift);
+            var response = await _userService.PostPeriodicShift(shift);
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
             else if (response.HttpResponseCode == 404)
@@ -55,30 +55,18 @@ namespace ViunaGuard.Controllers
             else
                 return BadRequest(response.Message);
         }
-
-        //[HttpPost("PostShiftWeekly")]
-        //public async Task<ActionResult<List<EmployeeShiftPeriodicWeekly>>> PostShiftWeekly(WeeklyShiftPostDto shift)
-        //{
-        //    var response = await userService.PostShiftWeekly(shift);
-        //    if (response.HttpResponseCode == 200)
-        //        return Ok(response.Data);
-        //    else if (response.HttpResponseCode == 404)
-        //        return NotFound(response.Message);
-        //    else
-        //        return BadRequest(response.Message);
-        //}
-
-        //[HttpPost("PostShiftMonthly")]
-        //public async Task<ActionResult<List<EmployeeShiftPeriodicMonthly>>> PostShiftMonthly(ShiftPostDto shift)
-        //{
-        //    var response = await userService.PostShift(shift);
-        //    if (response.HttpResponseCode == 200)
-        //        return Ok(response.Data);
-        //    else if (response.HttpResponseCode == 404)
-        //        return NotFound(response.Message);
-        //    else
-        //        return BadRequest(response.Message);
-        //}
+        
+        [HttpPost("PostShift")]
+        public async Task<ActionResult> PostPeriodicShift(ShiftPostDto shift)
+        {
+            var response = await _userService.PostShift(shift);
+            if (response.HttpResponseCode == 200)
+                return Ok(response.Data);
+            else if (response.HttpResponseCode == 404)
+                return NotFound(response.Message);
+            else
+                return BadRequest(response.Message);
+        }
 
         [HttpGet("GetOrganizationSignatureNeed")]
         public async Task<ActionResult<List<SignatureNeedForEntrancePermission>>> GetOrganizationSignatureNeed
@@ -121,6 +109,18 @@ namespace ViunaGuard.Controllers
         public async Task<ActionResult<EmployeeShift>> GetCurrentShift(int employeeId)
         {
             var response = await _userService.GetCurrentShift(employeeId);
+            if (response.HttpResponseCode == 200)
+                return Ok(response.Data);
+            else if (response.HttpResponseCode == 404)
+                return NotFound(response.Message);
+            else
+                return BadRequest(response.Message);
+        }
+
+        [HttpGet("GetPersonShifts")]
+        public async Task<ActionResult<TwoShiftGetDto>> GetPersonShifts(int employeeId)
+        {
+            var response = await _userService.GetPersonShifts(employeeId);
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
             else if (response.HttpResponseCode == 404)

@@ -26,10 +26,10 @@ namespace ViunaGuard.Dtos
         public string? Nationality { get; set; }
         public string? Religion { get; set; }
         public string? MaritalStatus { get; set; }
-        public List<Car> Cars { get; set; } = new List<Car>();
-        public List<Employee> Jobs { get; set; } = new List<Employee>();
-        public List<Entrance> Entrances { get; set; } = new List<Entrance>();
-        public List<EntrancePermission> EntrancePermissions { get; set; } = new List<EntrancePermission>();
-        public List<Organization> BannedFrom { get; set; } = new List<Organization>();
+        public List<Car> Cars { get; set; } = new();
+        public List<Employee> Jobs { get; set; } = new();
+        public List<Entrance> Entrances { get; set; } = new();
+        public List<EntrancePermission> EntrancePermissions { get; set; } = new();
+        public List<Organization> BannedFrom { get; set; } = new();
     }
 }
