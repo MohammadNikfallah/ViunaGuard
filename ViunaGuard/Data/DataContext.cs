@@ -50,7 +50,7 @@ namespace ViunaGuard.Data
         public DbSet<EmployeeShift> EmployeeShifts { get; set; }
         public DbSet<EntranceGroup> EntranceGroups { get; set; }
         public DbSet<EntrancePolicie> EntrancePolicies { get; set; }
-        public DbSet<OrganizationPolicie> OrganizationPolicies { get; set; }
+        public DbSet<OrganizationPolicy> OrganizationPolicies { get; set; }
         public DbSet<UserAccess> UserAccesses { get; set; }
         public DbSet<Authority> Authorities { get; set; }
         public DbSet<EmployeePeriodicShift> EmployeePeriodicShifts { get; set; }

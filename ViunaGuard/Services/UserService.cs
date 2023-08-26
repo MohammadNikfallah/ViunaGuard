@@ -254,8 +254,16 @@ namespace ViunaGuard.Services
             var shift = _context.EmployeeShifts
                 .Include(e => e.GuardDoor)
                 .Where(e => e.EmployeeId == employeeId);
-            var nowShift = shift.Where(e => time.Date < e.FinishTime.Date && time.Date > e.StartTime.Date);
-            Result.AddRange(await nowShift.Select(e => _mapper.Map<EmployeeShiftGetDto>(e)).ToListAsync());
+            var nowShift = shift.Where(e => time.Date <= e.FinishTime.Date && time.Date >= e.StartTime.Date);
+            tempResult = await nowShift.Select(e => _mapper.Map<EmployeeShiftGetDto>(e)).ToListAsync();
+            for (int i = 0; i < tempResult.Count; i++)
+            {
+                if (tempResult[i].StartTime.AddDays(1).Date <= time.Date)
+                    tempResult[i].StartTime = DateOnly.FromDateTime(time).ToDateTime(TimeOnly.MinValue);
+                if (tempResult[i].FinishTime.AddDays(-1).Date >= time.Date)
+                    tempResult[i].FinishTime = DateOnly.FromDateTime(time).ToDateTime(TimeOnly.MaxValue);
+            }
+            Result.AddRange(tempResult);
 
             return Result;
         }

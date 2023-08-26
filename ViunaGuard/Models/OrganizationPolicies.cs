@@ -2,7 +2,7 @@
 
 namespace ViunaGuard.Models
 {
-    public class OrganizationPolicie
+    public class OrganizationPolicy
     {
         [Key]
         public int OrganizationId { get; set; }

@@ -3,9 +3,6 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ViunaGuard.Dtos;
-using ViunaGuard.Models;
-using ViunaGuard.Services;
 
 namespace ViunaGuard.Controllers
 {
@@ -82,8 +79,8 @@ namespace ViunaGuard.Controllers
         public async Task<ActionResult<List<DoorGetDto>>> GetDoors()
         {
             var guardId = HttpContext.User.FindFirst("EmployeeId");
-            var guard = await _context.Employees.FindAsync(int.Parse(guardId.Value));
-            var doors = await _context.Doors.Where(d => d.OrganizationId == guard.OrganizationId)
+            var guard = await _context.Employees.FindAsync(int.Parse(guardId!.Value));
+            var doors = await _context.Doors.Where(d => d.OrganizationId == guard!.OrganizationId)
                 .Select(d => _mapper.Map<DoorGetDto>(d)).ToListAsync();
             return Ok(doors);
         }

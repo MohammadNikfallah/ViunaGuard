@@ -61,7 +61,7 @@ namespace ViunaGuard.Controllers
                 streamWriter.Write(json);
             }
 
-            var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+            var httpResponse = (HttpWebResponse) await httpWebRequest.GetResponseAsync();
 
             if (httpResponse.StatusCode == HttpStatusCode.OK)
             {
@@ -76,10 +76,10 @@ namespace ViunaGuard.Controllers
                         RedirectUri = "https://localhost:7063/"
                     },
                     authenticationSchemes: new List<string>() { "OAuth" });
-                return Ok();
+                return Task.FromResult<ActionResult<object>>(Ok());
             }
 
-            return BadRequest();
+            return Task.FromResult<ActionResult<object>>(BadRequest());
             // return Results.Challenge(
             //     new AuthenticationProperties()
             //     {
