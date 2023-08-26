@@ -106,13 +106,15 @@ namespace ViunaGuard.Controllers
             var job = _context.Employees.Find(employeeId);
             if (job != null && job.PersonId.ToString() == HttpContext.User.FindFirstValue("ID"))
             {
+                var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
+                identity.AddClaim(new Claim("EmployeeId", employeeId.ToString()));
+                if(job.EmployeeTypeId == 1)
+                    identity.AddClaim(new Claim(ClaimTypes.Role, "Guard"));
+                else
+                    identity.AddClaim(new Claim(ClaimTypes.Role, "Employee"));
                 await HttpContext.SignInAsync("RoleCookie",
                 new ClaimsPrincipal(
-                    new ClaimsIdentity(new[]
-                    {
-                        new Claim(ClaimTypes.Role, "Guard"),
-                        new Claim("EmployeeId", employeeId.ToString()),
-                    }, CookieAuthenticationDefaults.AuthenticationScheme)));
+                    identity));
                 return Ok();
             }
             await HttpContext.SignInAsync("RoleCookie",

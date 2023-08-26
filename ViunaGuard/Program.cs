@@ -40,6 +40,7 @@ catch (Exception e)
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IGuardService, GuardService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 
 builder.Services.AddAuthentication()
     .AddCookie("RoleCookie", options =>

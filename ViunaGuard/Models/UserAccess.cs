@@ -11,6 +11,5 @@ namespace ViunaGuard.Models
         public bool CanBringGuests { get; set; } = false;
         public bool CanInviteGuests { get; set; } = false;
         public bool AlwaysHaveEntrancePermission { get; set; } = false;
-
     }
 }

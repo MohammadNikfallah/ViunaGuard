@@ -10,6 +10,7 @@ namespace ViunaGuard.Controllers
     [Route("[controller]")]
     [ApiController]
     [Authorize]
+    [Authorize("RoleCookie")]
     public class TestController : ControllerBase
     {
         private readonly DataContext _context;
