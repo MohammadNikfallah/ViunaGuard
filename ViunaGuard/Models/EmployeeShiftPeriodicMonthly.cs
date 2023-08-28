@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace ViunaGuard.Models
 {
-    public class EmployeeShiftPeriodicWeekly
+    public class EmployeeShiftPeriodicMonthly
     {
         [Key]
         public int Id { get; set; }
@@ -17,7 +17,7 @@ namespace ViunaGuard.Models
         [JsonIgnore]
         public Organization Organization { get; set; } = null!;
         [Required]
-        public int DayOfWeek { get; set; }
+        public int DayOfMonth { get; set; }
         [Required]
         public DateTime StartTime { get; set; }
         [Required]

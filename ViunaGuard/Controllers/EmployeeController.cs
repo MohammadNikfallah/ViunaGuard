@@ -82,5 +82,16 @@ namespace ViunaGuard.Controllers
             else
                 return BadRequest(response.Message);
         }
+        [HttpPost("PostEmployeeMonthlyShift")]
+        public async Task<ActionResult> PostEmployeeMonthlyShift(MonthlyShiftPostDto monthlyShiftPostDto)
+        {
+            var response = await _guardService.PostEmployeeMonthlyShift(monthlyShiftPostDto);
+            if (response.HttpResponseCode == 200)
+                return Ok();
+            else if (response.HttpResponseCode == 404)
+                return NotFound(response.Message);
+            else
+                return BadRequest(response.Message);
+        }
     }
 }

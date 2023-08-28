@@ -1,9 +1,7 @@
-﻿using System.Security.Claims;
+﻿using System.Globalization;
+using System.Security.Claims;
 using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ViunaGuard.Dtos;
-using ViunaGuard.Models;
 
 namespace ViunaGuard.Services;
 
@@ -24,11 +22,11 @@ public class EmployeeService : IEmployeeService
     {
         var response = new ServiceResponse();
 
-        var employeeClaim = _httpContextAccessor.HttpContext.User.FindFirstValue("EmployeeId");
+        var employeeClaim = _httpContextAccessor.HttpContext!.User.FindFirstValue("EmployeeId");
         if (employeeClaim == null)
         {
             response.HttpResponseCode = 400;
-            response.Message = "Something is wrong with EmployeeId";
+            response.Message = "Something is wrong with EmployeeId Claim";
             return response;
         }
         var employeeId = int.Parse(employeeClaim);
@@ -53,11 +51,27 @@ public class EmployeeService : IEmployeeService
         if (employeeClaim == null)
         {
             response.HttpResponseCode = 400;
-            response.Message = "Something is wrong with EmployeeId";
+            response.Message = "Something is wrong with EmployeeId Claim";
             return response;
         }
         var employeeId = int.Parse(employeeClaim);
         var employee = await _context.Employees.FindAsync(employeeId);
+
+        var shiftEmployee = await _context.Employees.FindAsync(shift.EmployeeId);
+        if (shiftEmployee == null)
+        {
+            response.HttpResponseCode = 404;
+            response.Message = "Employee Not Found";
+            return response;
+        }
+
+        if (shiftEmployee.OrganizationId != employee.OrganizationId)
+        {
+            response.HttpResponseCode = 400;
+            response.Message = "You cant add shift for this employee";
+            return response;
+        }
+
 
         var employeeShift = _mapper.Map<EmployeeShift>(shift);
         employeeShift.ShiftMakerEmployeeId = employeeId;
@@ -80,7 +94,7 @@ public class EmployeeService : IEmployeeService
         if (employeeClaim == null)
         {
             response.HttpResponseCode = 400;
-            response.Message = "Something is wrong with EmployeeId";
+            response.Message = "Something is wrong with EmployeeId Claim";
             return response;
         }
         var employeeId = int.Parse(employeeClaim);
@@ -105,17 +119,37 @@ public class EmployeeService : IEmployeeService
     public async Task<List<EmployeeShiftGetDto>> GetDayShifts(DateTime time, int employeeId)
     {
         var Result = new List<EmployeeShiftGetDto>();
+        var pc = new PersianCalendar();
+            
+        var MonthlyShift = _context.EmployeeShiftsPeriodicMonthly
+            .Include(e => e.GuardDoor)
+            .Where(e => e.EmployeeId == employeeId);
+        var todayMonthlyShifts = MonthlyShift
+            .Where(e => e.DayOfMonth == pc.GetDayOfMonth(time));
+            
+        var tempResult = await todayMonthlyShifts.Select(e => _mapper.Map<EmployeeShiftGetDto>(e)).ToListAsync();
+        for (int i = 0; i < tempResult.Count; i++)
+        {
+            tempResult[i].StartTime = tempResult[i].StartTime.AddDays(time.DayOfYear - tempResult[i].StartTime.DayOfYear);
+            tempResult[i].StartTime = tempResult[i].StartTime.AddYears(time.Year - tempResult[i].StartTime.Year);
+            tempResult[i].FinishTime = tempResult[i].FinishTime.AddDays(time.DayOfYear - tempResult[i].FinishTime.DayOfYear);
+            tempResult[i].FinishTime = tempResult[i].FinishTime.AddYears(time.Year - tempResult[i].FinishTime.Year);
+        }
+        Result.AddRange(tempResult);
+        
         var periodicShift = _context.EmployeePeriodicShifts
             .Include(e => e.GuardDoor)
             .Where(e => e.EmployeeId == employeeId);
         var todayPeriodicShifts = periodicShift
             .Where(e => ((time.Date.DayOfYear - e.StartTime.Date.DayOfYear) % e.PeriodDayRange) == 0);
             
-        var tempResult = await todayPeriodicShifts.Select(e => _mapper.Map<EmployeeShiftGetDto>(e)).ToListAsync();
+        tempResult = await todayPeriodicShifts.Select(e => _mapper.Map<EmployeeShiftGetDto>(e)).ToListAsync();
         for (int i = 0; i < tempResult.Count; i++)
         {
             tempResult[i].StartTime = tempResult[i].StartTime.AddDays(time.DayOfYear - tempResult[i].StartTime.DayOfYear);
+            tempResult[i].StartTime = tempResult[i].StartTime.AddYears(time.Year - tempResult[i].StartTime.Year);
             tempResult[i].FinishTime = tempResult[i].FinishTime.AddDays(time.DayOfYear - tempResult[i].FinishTime.DayOfYear);
+            tempResult[i].FinishTime = tempResult[i].FinishTime.AddYears(time.Year - tempResult[i].FinishTime.Year);
         }
         Result.AddRange(tempResult);
 
@@ -144,7 +178,7 @@ public class EmployeeService : IEmployeeService
         if (employeeClaim == null)
         {
             response.HttpResponseCode = 400;
-            response.Message = "Something is wrong with EmployeeId";
+            response.Message = "Something is wrong with EmployeeId Claim";
             return response;
         }
         var employeeId = int.Parse(employeeClaim);
@@ -168,8 +202,36 @@ public class EmployeeService : IEmployeeService
             .FirstOrDefaultAsync(p => time.TimeOfDay > p.StartTime.TimeOfDay && time.TimeOfDay < p.FinishTime.TimeOfDay);
         if (nowPeriodicShift != null)
         {
+            var dayDifference = time.DayOfYear - nowPeriodicShift.StartTime.DayOfYear;
+            var yearDifference = time.Year - nowPeriodicShift.StartTime.Year;
+            nowPeriodicShift.StartTime = nowPeriodicShift.StartTime.AddDays(dayDifference);
+            nowPeriodicShift.StartTime = nowPeriodicShift.StartTime.AddYears(yearDifference);
+            nowPeriodicShift.FinishTime = nowPeriodicShift.FinishTime.AddDays(dayDifference);
+            nowPeriodicShift.FinishTime = nowPeriodicShift.FinishTime.AddYears(yearDifference);
             response.HttpResponseCode = 200;
             response.Data = _mapper.Map<EmployeeShiftGetDto>(nowPeriodicShift);
+            return response;
+        }
+
+        var pc = new PersianCalendar();
+            
+        var MonthlyShift = _context.EmployeeShiftsPeriodicMonthly
+            .Include(e => e.GuardDoor)
+            .Where(e => e.EmployeeId == employeeId);
+        var todayMonthlyShifts = MonthlyShift
+            .Where(e => e.DayOfMonth == pc.GetDayOfMonth(time));
+        var nowMonthlyShift = await todayMonthlyShifts
+            .FirstOrDefaultAsync(p => time.TimeOfDay > p.StartTime.TimeOfDay && time.TimeOfDay < p.FinishTime.TimeOfDay);
+        if (nowMonthlyShift != null)
+        {
+            var dayDifference = time.DayOfYear - nowMonthlyShift.StartTime.DayOfYear;
+            var yearDifference = time.Year - nowMonthlyShift.StartTime.Year;
+            nowMonthlyShift.StartTime = nowMonthlyShift.StartTime.AddDays(dayDifference);
+            nowMonthlyShift.StartTime = nowMonthlyShift.StartTime.AddYears(yearDifference);
+            nowMonthlyShift.FinishTime = nowMonthlyShift.FinishTime.AddDays(dayDifference);
+            nowMonthlyShift.FinishTime = nowMonthlyShift.FinishTime.AddYears(yearDifference);
+            response.HttpResponseCode = 200;
+            response.Data = _mapper.Map<EmployeeShiftGetDto>(nowMonthlyShift);
             return response;
         }
             
@@ -207,11 +269,27 @@ public class EmployeeService : IEmployeeService
         if (employeeClaim == null)
         {
             response.HttpResponseCode = 400;
-            response.Message = "Something is wrong with EmployeeId";
+            response.Message = "Something is wrong with EmployeeId Claim";
             return response;
         }
         var employeeId = int.Parse(employeeClaim);
         var employee = await _context.Employees.FindAsync(employeeId);
+
+        var shiftEmployee = await _context.Employees.FindAsync(weeklyShiftPostDto.EmployeeId);
+        if (shiftEmployee == null)
+        {
+            response.HttpResponseCode = 404;
+            response.Message = "Employee Not Found";
+            return response;
+        }
+
+        if (shiftEmployee.OrganizationId != employee.OrganizationId)
+        {
+            response.HttpResponseCode = 400;
+            response.Message = "You cant add shift for this employee";
+            return response;
+        }
+
 
         var periodicShift = _mapper.Map<EmployeePeriodicShift>(weeklyShiftPostDto);
         periodicShift.PeriodDayRange = 7;
@@ -229,6 +307,46 @@ public class EmployeeService : IEmployeeService
             ((weeklyShiftPostDto.DayOfWeek - ((int) DateTime.Now.DayOfWeek + 1) % 7) + (DateTime.Now.DayOfYear - periodicShift.FinishTime.DayOfYear));
 
         await _context.EmployeePeriodicShifts.AddAsync(periodicShift);
+        await _context.SaveChangesAsync();
+
+        response.HttpResponseCode = 200;
+        return response;
+    }
+
+    public async Task<ServiceResponse> PostEmployeeMonthlyShift(MonthlyShiftPostDto monthlyShiftPostDto)
+    {
+        var response = new ServiceResponse();
+        
+        var employeeClaim = _httpContextAccessor.HttpContext.User.FindFirstValue("EmployeeId");
+        if (employeeClaim == null)
+        {
+            response.HttpResponseCode = 400;
+            response.Message = "Something is wrong with EmployeeId Claim";
+            return response;
+        }
+        var employeeId = int.Parse(employeeClaim);
+        var employee = await _context.Employees.FindAsync(employeeId);
+
+        var shiftEmployee = await _context.Employees.FindAsync(monthlyShiftPostDto.EmployeeId);
+        if (shiftEmployee == null)
+        {
+            response.HttpResponseCode = 404;
+            response.Message = "Employee Not Found";
+            return response;
+        }
+
+        if (shiftEmployee.OrganizationId != employee.OrganizationId)
+        {
+            response.HttpResponseCode = 400;
+            response.Message = "You cant add shift for this employee";
+            return response;
+        }
+
+        var monthlyShift = _mapper.Map<EmployeeShiftPeriodicMonthly>(monthlyShiftPostDto);
+        monthlyShift.ShiftMakerEmployeeId = employeeId;
+        monthlyShift.OrganizationId = employee.OrganizationId;
+
+        await _context.EmployeeShiftsPeriodicMonthly.AddAsync(monthlyShift);
         await _context.SaveChangesAsync();
 
         response.HttpResponseCode = 200;

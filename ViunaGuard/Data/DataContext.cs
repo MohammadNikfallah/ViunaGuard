@@ -57,6 +57,7 @@ namespace ViunaGuard.Data
         public DbSet<SignatureNeedForEntrancePermission> SignatureNeedForEntrancePermissions { get; set; }
         public DbSet<SignedEntrancePermission> SignedEntrancePermissions { get; set; }
         public DbSet<AuthIdToViunaId> AuthIds { get; set; }
+        public DbSet<EmployeeShiftPeriodicMonthly> EmployeeShiftsPeriodicMonthly { get; set; }
 
 
         public DbSet<CarBrand> CarBrands {  get; set; }

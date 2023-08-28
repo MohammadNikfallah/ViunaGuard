@@ -3,6 +3,7 @@ global using ViunaGuard.Services;
 global using ViunaGuard.Models;
 global using ViunaGuard.Dtos;
 global using ViunaGuard.Models.Enums;
+using System.Globalization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;

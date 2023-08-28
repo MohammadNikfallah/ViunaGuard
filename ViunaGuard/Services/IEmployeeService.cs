@@ -11,5 +11,7 @@ public interface IEmployeeService
     public Task<ServiceResponse<EmployeeShiftGetDto>> GetCurrentShift();
     public Task<ServiceResponse> PostEmployee(EmployeePostDto employeePostDto);
     public Task<ServiceResponse> PostEmployeeWeeklyShift(WeeklyShiftPostDto weeklyShiftPostDto);
+    public Task<ServiceResponse> PostEmployeeMonthlyShift(MonthlyShiftPostDto monthlyShiftPostDto);
+
 
 }

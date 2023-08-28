@@ -117,13 +117,7 @@ namespace ViunaGuard.Controllers
                     identity));
                 return Ok();
             }
-            await HttpContext.SignInAsync("RoleCookie",
-            new ClaimsPrincipal(
-                new ClaimsIdentity(new Claim[]
-                {
-                    new(ClaimTypes.Role, "User"),
-                }, CookieAuthenticationDefaults.AuthenticationScheme)));
-            return Ok();
+            return NotFound("Employee Not Found");
         }
 
         [HttpGet("Test")]

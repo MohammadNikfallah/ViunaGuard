@@ -31,7 +31,9 @@ namespace ViunaGuard
             CreateMap<EmployeePeriodicShift, PeriodicShiftGetDto>();
             CreateMap<PeriodicShiftPostDto, EmployeePeriodicShift>();
             CreateMap<EmployeePeriodicShift, EmployeeShiftGetDto>();
+            CreateMap<EmployeeShiftPeriodicMonthly, EmployeeShiftGetDto>();
             CreateMap<WeeklyShiftPostDto, EmployeePeriodicShift>();
+            CreateMap<MonthlyShiftPostDto, EmployeeShiftPeriodicMonthly>();
         }
     }
 }

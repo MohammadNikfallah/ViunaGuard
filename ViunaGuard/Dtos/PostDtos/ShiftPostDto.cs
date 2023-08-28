@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
+using System.Runtime.InteropServices.JavaScript;
 using System.Text.Json.Serialization;
 using ViunaGuard.Models;
 
@@ -9,6 +11,7 @@ namespace ViunaGuard.Dtos
     {
         [Required]
         public int EmployeeId { get; set; }
+
         [Required]
         public DateTime StartTime { get; set; }
         [Required]
