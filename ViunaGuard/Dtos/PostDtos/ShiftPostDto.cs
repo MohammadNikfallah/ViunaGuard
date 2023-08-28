@@ -10,8 +10,6 @@ namespace ViunaGuard.Dtos
         [Required]
         public int EmployeeId { get; set; }
         [Required]
-        public int OrganizationId { get; set; }
-        [Required]
         public DateTime StartTime { get; set; }
         [Required]
         public DateTime FinishTime { get; set; }

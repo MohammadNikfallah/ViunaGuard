@@ -28,7 +28,7 @@ namespace ViunaGuard.Controllers
         {
             var response = await _guardService.PostPeriodicShift(shift);
             if (response.HttpResponseCode == 200)
-                return Ok(response.Data);
+                return Ok();
             else if (response.HttpResponseCode == 404)
                 return NotFound(response.Message);
             else
@@ -65,6 +65,18 @@ namespace ViunaGuard.Controllers
             var response = await _guardService.GetEmployeeShifts();
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
+            else if (response.HttpResponseCode == 404)
+                return NotFound(response.Message);
+            else
+                return BadRequest(response.Message);
+        }
+
+        [HttpPost("PostEmployeeWeeklyShift")]
+        public async Task<ActionResult> PostEmployeeWeeklyShift(WeeklyShiftPostDto weeklyShiftPostDto)
+        {
+            var response = await _guardService.PostEmployeeWeeklyShift(weeklyShiftPostDto);
+            if (response.HttpResponseCode == 200)
+                return Ok();
             else if (response.HttpResponseCode == 404)
                 return NotFound(response.Message);
             else

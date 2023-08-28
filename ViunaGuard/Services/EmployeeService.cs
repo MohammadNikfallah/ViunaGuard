@@ -20,9 +20,9 @@ public class EmployeeService : IEmployeeService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task<ServiceResponse<object>> PostPeriodicShift(PeriodicShiftPostDto shift)
+    public async Task<ServiceResponse> PostPeriodicShift(PeriodicShiftPostDto shift)
     {
-        var response = new ServiceResponse<object>();
+        var response = new ServiceResponse();
 
         var employeeClaim = _httpContextAccessor.HttpContext.User.FindFirstValue("EmployeeId");
         if (employeeClaim == null)
@@ -32,8 +32,10 @@ public class EmployeeService : IEmployeeService
             return response;
         }
         var employeeId = int.Parse(employeeClaim);
+        var employee = await _context.Employees.FindAsync(employeeId);
         
         var employeePeriodicShift = _mapper.Map<EmployeePeriodicShift>(shift);
+        employeePeriodicShift.OrganizationId = employee.OrganizationId;
         employeePeriodicShift.ShiftMakerEmployeeId = employeeId;
         
         await _context.EmployeePeriodicShifts.AddAsync(employeePeriodicShift);
@@ -55,9 +57,11 @@ public class EmployeeService : IEmployeeService
             return response;
         }
         var employeeId = int.Parse(employeeClaim);
+        var employee = await _context.Employees.FindAsync(employeeId);
 
         var employeeShift = _mapper.Map<EmployeeShift>(shift);
         employeeShift.ShiftMakerEmployeeId = employeeId;
+        employeeShift.OrganizationId = employee.OrganizationId;
         
         await _context.EmployeeShifts.AddAsync(employeeShift);
         await _context.SaveChangesAsync();
@@ -186,12 +190,48 @@ public class EmployeeService : IEmployeeService
         return response;
     }
 
-    public async Task<ActionResult> PostEmployee(EmployeePostDto employeePostDto)
+    public async Task<ServiceResponse> PostEmployee(EmployeePostDto employeePostDto)
     {
         var employee = _mapper.Map<Employee>(employeePostDto);
         await _context.Employees.AddAsync(employee);
         await _context.SaveChangesAsync();
         
         throw new NotImplementedException();
+    }
+
+    public async Task<ServiceResponse> PostEmployeeWeeklyShift(WeeklyShiftPostDto weeklyShiftPostDto)
+    {
+        var response = new ServiceResponse();
+        
+        var employeeClaim = _httpContextAccessor.HttpContext.User.FindFirstValue("EmployeeId");
+        if (employeeClaim == null)
+        {
+            response.HttpResponseCode = 400;
+            response.Message = "Something is wrong with EmployeeId";
+            return response;
+        }
+        var employeeId = int.Parse(employeeClaim);
+        var employee = await _context.Employees.FindAsync(employeeId);
+
+        var periodicShift = _mapper.Map<EmployeePeriodicShift>(weeklyShiftPostDto);
+        periodicShift.PeriodDayRange = 7;
+        periodicShift.OrganizationId = employee.OrganizationId;
+        periodicShift.ShiftMakerEmployeeId = employeeId;
+        
+        periodicShift.StartTime = periodicShift.StartTime.AddYears(DateTime.Now.Year - periodicShift.StartTime.Year);
+        periodicShift.StartTime = periodicShift.StartTime.AddMonths(DateTime.Now.Month - periodicShift.StartTime.Month);
+        periodicShift.StartTime = periodicShift.StartTime.AddDays
+            ((weeklyShiftPostDto.DayOfWeek - ((int) DateTime.Now.DayOfWeek + 1) % 7) + (DateTime.Now.DayOfYear - periodicShift.StartTime.DayOfYear));
+        
+        periodicShift.FinishTime = periodicShift.FinishTime.AddYears(DateTime.Now.Year - periodicShift.FinishTime.Year);
+        periodicShift.FinishTime = periodicShift.FinishTime.AddMonths(DateTime.Now.Month - periodicShift.FinishTime.Month);
+        periodicShift.FinishTime = periodicShift.FinishTime.AddDays
+            ((weeklyShiftPostDto.DayOfWeek - ((int) DateTime.Now.DayOfWeek + 1) % 7) + (DateTime.Now.DayOfYear - periodicShift.FinishTime.DayOfYear));
+
+        await _context.EmployeePeriodicShifts.AddAsync(periodicShift);
+        await _context.SaveChangesAsync();
+
+        response.HttpResponseCode = 200;
+        return response;
     }
 }

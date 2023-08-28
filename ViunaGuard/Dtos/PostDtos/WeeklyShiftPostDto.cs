@@ -2,12 +2,12 @@
 
 namespace ViunaGuard.Dtos;
 
-public class PeriodicShiftPostDto
+public class WeeklyShiftPostDto
 {
     [Required]
     public int EmployeeId { get; set; }
     [Required]
-    public int PeriodDayRange { get; set; }
+    public int DayOfWeek { get; set; }
     [Required]
     public DateTime StartTime { get; set; }
     [Required]

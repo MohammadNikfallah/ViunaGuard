@@ -9,4 +9,9 @@ namespace ViunaGuard.Models
         public string? Message { get; set; }
         public int HttpResponseCode { get; set; } = 400;
     }
+    public class ServiceResponse
+    {
+        public string? Message { get; set; }
+        public int HttpResponseCode { get; set; } = 400;
+    }
 }
