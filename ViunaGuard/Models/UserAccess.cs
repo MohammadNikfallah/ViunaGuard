@@ -7,9 +7,11 @@ namespace ViunaGuard.Models
     {
         [Key]
         public int Id { get; set; }
-        public bool CanChangeShifts { get; set; } = false;
-        public bool CanBringGuests { get; set; } = false;
-        public bool CanInviteGuests { get; set; } = false;
-        public bool AlwaysHaveEntrancePermission { get; set; } = false;
+        public bool CanChangeShifts { get; set; }
+        public bool CanBringGuests { get; set; }
+        public bool CanInviteGuests { get; set; }
+        public bool AlwaysHaveEntrancePermission { get; set; }
+        public bool CanSeeOtherGuardsEntrances { get; set; }
+        public bool CanSeeOtherDoorsEntrances { get; set; }
     }
 }

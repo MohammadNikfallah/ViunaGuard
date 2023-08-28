@@ -27,7 +27,11 @@ namespace ViunaGuard.Models
         public int AuthorityLevelId { get; set; }
         [JsonIgnore]
         public Authority Authority { get; set; } = null!;
+        [ForeignKey("UserAccess")]
+        public int? UserAccessId { get; set; }
+        [JsonIgnore]
+        public UserAccess? UserAccess { get; set; }
         [JsonIgnore, InverseProperty("Employee")]
-        public List<EmployeeShift> EmployeeShifts { get; set; } = new List<EmployeeShift>();
+        public List<EmployeeShift> EmployeeShifts { get; set; } = new();
     }
 }

@@ -23,6 +23,12 @@ namespace ViunaGuard.Controllers
             _guardService = employeeService;
         }
 
+        [HttpPost("Test")]
+        public async Task<ActionResult> Test()
+        {
+            return Ok();
+        }
+
         [HttpPost("PostPeriodicShift")]
         public async Task<ActionResult> PostPeriodicShift(PeriodicShiftPostDto shift)
         {
