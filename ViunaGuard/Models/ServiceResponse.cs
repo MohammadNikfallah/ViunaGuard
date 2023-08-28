@@ -1,5 +1,8 @@
-﻿namespace ViunaGuard.Models
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace ViunaGuard.Models
 {
+    [Keyless]
     public class ServiceResponse <T>
     {
         public T? Data { get; set; }

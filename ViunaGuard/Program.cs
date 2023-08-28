@@ -14,6 +14,7 @@ using Swashbuckle.AspNetCore.Filters;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text.Json;
+using Microsoft.AspNetCore.HttpLogging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +37,23 @@ catch (Exception e)
 {
     File.AppendAllText("log",DateTime.Now +": couldn't grab key: " + e.Message + "\n");
 }
+
+builder.Services.AddHttpLogging(logging =>
+{
+    logging.LoggingFields = HttpLoggingFields.All;
+    logging.RequestHeaders.Add("sec-ch-ua");
+    logging.RequestHeaders.Add("sec-ch-ua-mobile");
+    logging.RequestHeaders.Add("sec-ch-ua-platform");
+    logging.RequestHeaders.Add("sec-fetch-site");
+    logging.RequestHeaders.Add("sec-fetch-mode");
+    logging.RequestHeaders.Add("sec-fetch-dest");
+    logging.RequestHeaders.Add("Cookie");
+    logging.RequestHeaders.Add("Authorize");
+    logging.ResponseHeaders.Add("set-Cookie");
+    logging.MediaTypeOptions.AddText("application/json");
+    logging.RequestBodyLogLimit = 4096;
+    logging.ResponseBodyLogLimit = 4096;
+});
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IGuardService, GuardService>();
@@ -248,7 +266,6 @@ builder.Services.AddAuthorization(o =>
         .Build());
 });
 
-
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -258,6 +275,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseHttpLogging();
 
 app.UseAuthorization();
 

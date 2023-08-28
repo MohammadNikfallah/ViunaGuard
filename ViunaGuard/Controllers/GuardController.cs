@@ -98,7 +98,7 @@ namespace ViunaGuard.Controllers
                 return BadRequest(response.Message);
         }
         
-        [HttpPost("GetCars")]
+        [HttpGet("GetCars")]
         public async Task<ActionResult<List<Car>>> GetCars (string licenseNumber)
         {
             var response = new ServiceResponse<List<Car>>();
