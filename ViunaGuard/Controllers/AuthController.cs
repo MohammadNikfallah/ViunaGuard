@@ -99,9 +99,9 @@ namespace ViunaGuard.Controllers
             return Ok();
         }
 
-        [HttpGet("RoleLogin")]
+        [HttpGet("EmployeeLogin")]
         [Authorize]
-        public async Task<ActionResult> RoleLogin(int employeeId)
+        public async Task<ActionResult> EmployeeLogin(int employeeId)
         {
             var job = _context.Employees.Find(employeeId);
             if (job != null && job.PersonId.ToString() == HttpContext.User.FindFirstValue("ID"))

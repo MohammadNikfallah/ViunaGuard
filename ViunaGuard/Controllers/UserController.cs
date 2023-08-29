@@ -94,7 +94,7 @@ namespace ViunaGuard.Controllers
         }
 
         [HttpGet("GetPersonJobs")]
-        public async Task<ActionResult<List<EmployeeGetDto>>> GetPersnJobs()
+        public async Task<ActionResult<List<EmployeeGetDto>>> GetPersonJobs()
         {
             var response = await _userService.GetPersonJobs();
             if (response.HttpResponseCode == 200)

@@ -20,15 +20,15 @@ using Microsoft.AspNetCore.HttpLogging;
 var builder = WebApplication.CreateBuilder(args);
 
 string responseString = "";
-// string OAUTH_BASE_URL = "http://192.168.0.107:7121/";
-string OAUTH_BASE_URL = "https://localhost:7120/";
+string oauthBaseUrl = builder.Configuration.GetValue<string>("OauthBaseUrl")!;
+// string OAUTH_BASE_URL = "https://localhost:7120/";
 
 try
 {
     var client = new HttpClient();
     var request = new HttpRequestMessage()
     {
-        RequestUri = new Uri($"{OAUTH_BASE_URL}api/OAuth/PublicKey"),
+        RequestUri = new Uri($"{oauthBaseUrl}api/OAuth/PublicKey"),
         Method = HttpMethod.Get
     };
     var response = await client.SendAsync(request);
@@ -39,6 +39,7 @@ catch (Exception e)
     File.AppendAllText("log",DateTime.Now +": couldn't grab key: " + e.Message + "\n");
 }
 
+
 builder.Services.AddHttpLogging(logging =>
 {
     logging.LoggingFields = HttpLoggingFields.All;
@@ -48,10 +49,11 @@ builder.Services.AddHttpLogging(logging =>
     logging.RequestHeaders.Add("sec-fetch-site");
     logging.RequestHeaders.Add("sec-fetch-mode");
     logging.RequestHeaders.Add("sec-fetch-dest");
+    logging.RequestHeaders.Add("sec-fetch-user");
     logging.RequestHeaders.Add("Cookie");
     logging.RequestHeaders.Add("Authorize");
-    logging.ResponseHeaders.Add("set-Cookie");
-    logging.MediaTypeOptions.AddText("application/json");
+    logging.ResponseHeaders.Add("Set-Cookie");
+    // logging.MediaTypeOptions.AddText("application/json");
     logging.RequestBodyLogLimit = 4096;
     logging.ResponseBodyLogLimit = 4096;
 });
@@ -213,8 +215,8 @@ builder.Services.AddAuthentication()
         o.ClientId = "12345";
         o.ClientSecret = "secretTest";
 
-        o.AuthorizationEndpoint = $"{OAUTH_BASE_URL}api/OAuth/authorize";
-        o.TokenEndpoint = $"{OAUTH_BASE_URL}api/OAuth/token";
+        o.AuthorizationEndpoint = $"{oauthBaseUrl}api/OAuth/authorize";
+        o.TokenEndpoint = $"{oauthBaseUrl}api/OAuth/token";
         o.CallbackPath = "/api/custom_cb";
 
         o.UsePkce = false;
@@ -293,7 +295,7 @@ async Task<JsonDocument> AccessRefresh(string refreshToken)
         ClientId = "12345",
         ClientSecret = "secretTest",
         RefreshToken = refreshToken,
-        TokenEndpoint = $"{OAUTH_BASE_URL}api/OAuth/token"
+        TokenEndpoint = $"{oauthBaseUrl}api/OAuth/token"
     };
 
     var tokens = await RefreshTokenHandlerClass.RefreshTokenHandler(request);

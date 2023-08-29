@@ -326,7 +326,6 @@ namespace ViunaGuard.Services
             
             var data = await _context.Employees
                 .Include(e => e.Authority)
-                .Include(e => e.Organization)
                 .Include(e => e.EmployeeType)
                 .Where(e => e.PersonId.ToString() == id)
                 .Select(e => _mapper.Map<EmployeeGetDto>(e))

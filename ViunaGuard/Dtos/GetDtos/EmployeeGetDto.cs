@@ -8,7 +8,6 @@ namespace ViunaGuard.Dtos;
 public class EmployeeGetDto
 {
     public int Id { get; set; }
-    public Person Person { get; set; } = null!;
     public EmployeeType? EmployeeType { get; set; }
     public string? PersonnelID { get; set; } = string.Empty;
     // [ForeignKey("Authority")]
