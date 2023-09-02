@@ -25,7 +25,7 @@ public class EmployeeService : IEmployeeService
         if (CheckEmployeeId(employee, response, out var serviceResponse)) return serviceResponse;
 
         var employeePeriodicShift = _mapper.Map<EmployeePeriodicShift>(shift);
-        employeePeriodicShift.OrganizationId = employee.OrganizationId;
+        employeePeriodicShift.OrganizationId = employee!.OrganizationId;
         employeePeriodicShift.ShiftMakerEmployeeId = employeeId;
         
         await _context.EmployeePeriodicShifts.AddAsync(employeePeriodicShift);
@@ -81,7 +81,7 @@ public class EmployeeService : IEmployeeService
             return response;
         }
 
-        if (shiftEmployee.OrganizationId != employee.OrganizationId)
+        if (shiftEmployee.OrganizationId != employee!.OrganizationId)
         {
             response.HttpResponseCode = 400;
             response.Message = "You cant add shift for this employee";
@@ -121,27 +121,27 @@ public class EmployeeService : IEmployeeService
         response.HttpResponseCode = 200;
         return response;
     }
-    
-    public async Task<List<EmployeeShiftGetDto>> GetDayShifts(DateTime time, int employeeId)
+
+    private async Task<List<EmployeeShiftGetDto>> GetDayShifts(DateTime time, int employeeId)
     {
-        var Result = new List<EmployeeShiftGetDto>();
+        var result = new List<EmployeeShiftGetDto>();
         var pc = new PersianCalendar();
             
-        var MonthlyShift = _context.EmployeeShiftsPeriodicMonthly
+        var monthlyShift = _context.EmployeeShiftsPeriodicMonthly
             .Include(e => e.GuardDoor)
             .Where(e => e.EmployeeId == employeeId);
-        var todayMonthlyShifts = MonthlyShift
+        var todayMonthlyShifts = monthlyShift
             .Where(e => e.DayOfMonth == pc.GetDayOfMonth(time));
             
         var tempResult = await todayMonthlyShifts.Select(e => _mapper.Map<EmployeeShiftGetDto>(e)).ToListAsync();
-        for (int i = 0; i < tempResult.Count; i++)
+        foreach (var t in tempResult)
         {
-            tempResult[i].StartTime = tempResult[i].StartTime.AddDays(time.DayOfYear - tempResult[i].StartTime.DayOfYear);
-            tempResult[i].StartTime = tempResult[i].StartTime.AddYears(time.Year - tempResult[i].StartTime.Year);
-            tempResult[i].FinishTime = tempResult[i].FinishTime.AddDays(time.DayOfYear - tempResult[i].FinishTime.DayOfYear);
-            tempResult[i].FinishTime = tempResult[i].FinishTime.AddYears(time.Year - tempResult[i].FinishTime.Year);
+            t.StartTime = t.StartTime.AddDays(time.DayOfYear - t.StartTime.DayOfYear);
+            t.StartTime = t.StartTime.AddYears(time.Year - t.StartTime.Year);
+            t.FinishTime = t.FinishTime.AddDays(time.DayOfYear - t.FinishTime.DayOfYear);
+            t.FinishTime = t.FinishTime.AddYears(time.Year - t.FinishTime.Year);
         }
-        Result.AddRange(tempResult);
+        result.AddRange(tempResult);
         
         var periodicShift = _context.EmployeePeriodicShifts
             .Include(e => e.GuardDoor)
@@ -150,30 +150,30 @@ public class EmployeeService : IEmployeeService
             .Where(e => ((time.Date.DayOfYear - e.StartTime.Date.DayOfYear) % e.PeriodDayRange) == 0);
             
         tempResult = await todayPeriodicShifts.Select(e => _mapper.Map<EmployeeShiftGetDto>(e)).ToListAsync();
-        for (int i = 0; i < tempResult.Count; i++)
+        foreach (var t in tempResult)
         {
-            tempResult[i].StartTime = tempResult[i].StartTime.AddDays(time.DayOfYear - tempResult[i].StartTime.DayOfYear);
-            tempResult[i].StartTime = tempResult[i].StartTime.AddYears(time.Year - tempResult[i].StartTime.Year);
-            tempResult[i].FinishTime = tempResult[i].FinishTime.AddDays(time.DayOfYear - tempResult[i].FinishTime.DayOfYear);
-            tempResult[i].FinishTime = tempResult[i].FinishTime.AddYears(time.Year - tempResult[i].FinishTime.Year);
+            t.StartTime = t.StartTime.AddDays(time.DayOfYear - t.StartTime.DayOfYear);
+            t.StartTime = t.StartTime.AddYears(time.Year - t.StartTime.Year);
+            t.FinishTime = t.FinishTime.AddDays(time.DayOfYear - t.FinishTime.DayOfYear);
+            t.FinishTime = t.FinishTime.AddYears(time.Year - t.FinishTime.Year);
         }
-        Result.AddRange(tempResult);
+        result.AddRange(tempResult);
 
         var shift = _context.EmployeeShifts
             .Include(e => e.GuardDoor)
             .Where(e => e.EmployeeId == employeeId);
         var nowShift = shift.Where(e => time.Date <= e.FinishTime.Date && time.Date >= e.StartTime.Date);
         tempResult = await nowShift.Select(e => _mapper.Map<EmployeeShiftGetDto>(e)).ToListAsync();
-        for (int i = 0; i < tempResult.Count; i++)
+        foreach (var t in tempResult)
         {
-            if (tempResult[i].StartTime.AddDays(1).Date <= time.Date)
-                tempResult[i].StartTime = DateOnly.FromDateTime(time).ToDateTime(TimeOnly.MinValue);
-            if (tempResult[i].FinishTime.AddDays(-1).Date >= time.Date)
-                tempResult[i].FinishTime = DateOnly.FromDateTime(time).ToDateTime(TimeOnly.MaxValue);
+            if (t.StartTime.AddDays(1).Date <= time.Date)
+                t.StartTime = DateOnly.FromDateTime(time).ToDateTime(TimeOnly.MinValue);
+            if (t.FinishTime.AddDays(-1).Date >= time.Date)
+                t.FinishTime = DateOnly.FromDateTime(time).ToDateTime(TimeOnly.MaxValue);
         }
-        Result.AddRange(tempResult);
+        result.AddRange(tempResult);
 
-        return Result;
+        return result;
     }
 
     public async Task<ServiceResponse<EmployeeShiftGetDto>> GetCurrentShift(int employeeId)
@@ -211,10 +211,10 @@ public class EmployeeService : IEmployeeService
 
         var pc = new PersianCalendar();
             
-        var MonthlyShift = _context.EmployeeShiftsPeriodicMonthly
+        var monthlyShift = _context.EmployeeShiftsPeriodicMonthly
             .Include(e => e.GuardDoor)
             .Where(e => e.EmployeeId == employeeId);
-        var todayMonthlyShifts = MonthlyShift
+        var todayMonthlyShifts = monthlyShift
             .Where(e => e.DayOfMonth == pc.GetDayOfMonth(time));
         var nowMonthlyShift = await todayMonthlyShifts
             .FirstOrDefaultAsync(p => time.TimeOfDay > p.StartTime.TimeOfDay && time.TimeOfDay < p.FinishTime.TimeOfDay);
@@ -271,7 +271,7 @@ public class EmployeeService : IEmployeeService
             return response;
         }
 
-        if (shiftEmployee.OrganizationId != employee.OrganizationId)
+        if (shiftEmployee.OrganizationId != employee!.OrganizationId)
         {
             response.HttpResponseCode = 400;
             response.Message = "You cant add shift for this employee";
@@ -315,7 +315,7 @@ public class EmployeeService : IEmployeeService
             return response;
         }
 
-        if (shiftEmployee.OrganizationId != employee.OrganizationId)
+        if (shiftEmployee.OrganizationId != employee!.OrganizationId)
         {
             response.HttpResponseCode = 400;
             response.Message = "You cant add shift for this employee";

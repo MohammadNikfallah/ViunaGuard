@@ -14,7 +14,7 @@ namespace ViunaGuard.Services
         
         public async Task<JsonDocument> AccessRefresh(string refreshToken)
         {
-            System.IO.File.AppendAllText("log", DateTime.Now + " : refreshing the access token\n");
+            await File.AppendAllTextAsync("log", DateTime.Now + " : refreshing the access token\n");
             var request = new RtRequest()
             {
                 ClientId = "12345",
@@ -26,7 +26,8 @@ namespace ViunaGuard.Services
             var tokens = await RefreshTokenHandlerClass.RefreshTokenHandler(request);
             return tokens;
         }
-        public static async Task<JsonDocument> RefreshTokenHandler(RtRequest request)
+
+        private static async Task<JsonDocument> RefreshTokenHandler(RtRequest request)
         {
             var tokenRequestParameters = new Dictionary<string, string>()
             {
@@ -54,9 +55,9 @@ namespace ViunaGuard.Services
 
     public class RtRequest
     {
-        public string ClientId { get; set; } = null!;
-        public string ClientSecret { get; set; } = null!;
-        public string RefreshToken { get; set; } = null!;
-        public string TokenEndpoint { get; set; } = null!;
+        public string ClientId { get; init; } = null!;
+        public string ClientSecret { get; init; } = null!;
+        public string RefreshToken { get; init; } = null!;
+        public string TokenEndpoint { get; init; } = null!;
     }
 }

@@ -85,8 +85,10 @@ namespace ViunaGuard.Controllers
         [HttpGet("GetCars")]
         public async Task<ActionResult<List<Car>>> GetCars (string licenseNumber, int employeeId)
         {
-            var response = new ServiceResponse<List<Car>>();
-            response.Data = await _context.Cars.Where(car => car.LicenseNumber == licenseNumber).ToListAsync();
+            var response = new ServiceResponse<List<Car>>
+            {
+                Data = await _context.Cars.Where(car => car.LicenseNumber == licenseNumber).ToListAsync()
+            };
             return response.Data;
         }
     }

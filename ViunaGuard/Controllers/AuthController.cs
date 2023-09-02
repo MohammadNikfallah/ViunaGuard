@@ -1,12 +1,8 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Net;
+﻿using System.Net;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using System.Text.Json;
-using Azure.Core;
 
 
 namespace ViunaGuard.Controllers
@@ -15,13 +11,11 @@ namespace ViunaGuard.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly DataContext _context;
         private readonly IConfiguration _configuration;
         private readonly IRefreshTokenHandler _refreshTokenHandler;
 
-        public AuthController(DataContext context,IConfiguration configuration,IRefreshTokenHandler refreshTokenHandler)
+        public AuthController(IConfiguration configuration,IRefreshTokenHandler refreshTokenHandler)
         {
-            _context = context;
             _configuration = configuration;
             _refreshTokenHandler = refreshTokenHandler;
         }
@@ -53,7 +47,7 @@ namespace ViunaGuard.Controllers
                     password = userLogin.Password
                 });
 
-                streamWriter.Write(json);
+                await streamWriter.WriteAsync(json);
             }
 
             var httpResponse = (HttpWebResponse) await httpWebRequest.GetResponseAsync();
@@ -83,27 +77,6 @@ namespace ViunaGuard.Controllers
             return Ok();
         }
 
-        [HttpGet("EmployeeLogin")]
-        [Authorize]
-        public async Task<ActionResult> EmployeeLogin(int employeeId)
-        {
-            var job = _context.Employees.Find(employeeId);
-            if (job != null && job.PersonId.ToString() == HttpContext.User.FindFirstValue("ID"))
-            {
-                var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
-                identity.AddClaim(new Claim("EmployeeId", employeeId.ToString()));
-                if(job.EmployeeTypeId == 1)
-                    identity.AddClaim(new Claim(ClaimTypes.Role, "Guard"));
-                else
-                    identity.AddClaim(new Claim(ClaimTypes.Role, "Employee"));
-                await HttpContext.SignInAsync("RoleCookie",
-                new ClaimsPrincipal(
-                    identity));
-                return Ok();
-            }
-            return NotFound("Employee Not Found");
-        }
-
         [HttpGet("RefreshToken")]
         public async Task<ActionResult> RefreshToken()
         {
@@ -111,41 +84,36 @@ namespace ViunaGuard.Controllers
             if (refreshToken == null)
             {
                 refreshToken = Request.Headers["Authorization"];
-                if (refreshToken.StartsWith("Bearer"))
+                if (refreshToken!.StartsWith("Bearer"))
                     refreshToken = refreshToken.Split(' ')[1];
                 else
                     return BadRequest();
             }
             var tokens = await _refreshTokenHandler.AccessRefresh(refreshToken);
-            if (tokens != null)
+            var accessToken = tokens.RootElement.GetString("access_token");
+            if (accessToken == null)
             {
-                var accessToken = tokens.RootElement.GetString("access_token");
-                if (accessToken == null)
-                {
-                    return BadRequest();
-                }
-                Response.Cookies.Append("VAT", accessToken!, new CookieOptions
-                {
-                    Expires = DateTime.Now.AddMinutes(10),
-                    HttpOnly = true,
-                    SameSite = SameSiteMode.Strict,
-                    Secure = true
-                });
-                Response.Cookies.Append("VRT", tokens.RootElement.GetString("refresh_token")!, new CookieOptions
-                {
-                    Expires = DateTime.Now.AddDays(30),
-                    HttpOnly = true,
-                    SameSite = SameSiteMode.Strict,
-                    Secure = true
-                });
-                return Ok(new
-                {
-                    AccessToken = accessToken,
-                    RefreshToken = tokens.RootElement.GetString("refresh_token")!
-                });
+                return BadRequest();
             }
-
-            return StatusCode(500);
+            Response.Cookies.Append("VAT", accessToken, new CookieOptions
+            {
+                Expires = DateTime.Now.AddMinutes(10),
+                HttpOnly = true,
+                SameSite = SameSiteMode.Strict,
+                Secure = true
+            });
+            Response.Cookies.Append("VRT", tokens.RootElement.GetString("refresh_token")!, new CookieOptions
+            {
+                Expires = DateTime.Now.AddDays(30),
+                HttpOnly = true,
+                SameSite = SameSiteMode.Strict,
+                Secure = true
+            });
+            return Ok(new
+            {
+                AccessToken = accessToken,
+                RefreshToken = tokens.RootElement.GetString("refresh_token")!
+            });
         }
 
         [HttpGet("Test")]

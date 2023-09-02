@@ -2,8 +2,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ViunaGuard.Dtos;
-using ViunaGuard.Models;
 
 namespace ViunaGuard.Controllers
 {

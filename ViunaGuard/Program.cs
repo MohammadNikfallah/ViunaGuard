@@ -92,60 +92,14 @@ builder.Services.AddAuthentication()
 
         options.Events = new JwtBearerEvents
         {
-            OnMessageReceived = async ctx =>
+            OnMessageReceived = ctx =>
             {
                 if (ctx.Token == null) {
                     if (ctx.Request.Cookies.ContainsKey("VAT"))
                         ctx.Token = ctx.Request.Cookies["VAT"];
                 }
-            },
 
-            OnAuthenticationFailed = async ctx =>
-            {
-                // var refreshToken = ctx.Request.Cookies.FirstOrDefault(x => x.Key == "VRT").Value;
-                // if (ctx.Exception.GetType() == typeof(SecurityTokenExpiredException) && refreshToken != null)
-                // {
-                //     var tokens = await AccessRefresh(refreshToken);
-                //     if (tokens != null)
-                //     {
-                //         var accessToken = tokens.RootElement.GetString("access_token");
-                //         ctx.Response.Cookies.Append("VAT", accessToken!, new CookieOptions
-                //         {
-                //             Expires = DateTime.Now.AddMinutes(10),
-                //             HttpOnly = true,
-                //             SameSite = SameSiteMode.Strict,
-                //             Secure = true
-                //         });
-                //         ctx.Response.Cookies.Append("VRT", tokens.RootElement.GetString("refresh_token")!, new CookieOptions
-                //         {
-                //             Expires = DateTime.Now.AddDays(30),
-                //             HttpOnly = true,
-                //             SameSite = SameSiteMode.Strict,
-                //             Secure = true
-                //         });
-                //
-                //         var jwt = new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
-                //
-                //         var sp = builder.Services.BuildServiceProvider();
-                //         var dbContext = sp.GetService<DataContext>();
-                //         var claim = jwt.Claims.First(c => c.Type == "ID").Value;
-                //         var id = await dbContext.AuthIds
-                //             .FirstOrDefaultAsync(a => a.AuthId.ToString() == claim);
-                //
-                //         File.AppendAllText("log", id.ViunaUserId.ToString() + "\n");
-                //
-                //         ctx.Principal = new ClaimsPrincipal(
-                //                     new ClaimsIdentity(
-                //                         new Claim[]
-                //                         {
-                //                             new Claim("ID", id.ViunaUserId.ToString())
-                //                         },
-                //                         "Cookie"
-                //                         ));
-                //         ctx.Success();
-                //     }
-                // }
-                // ctx.Response.Cookies.Delete("RC");
+                return Task.CompletedTask;
             },
 
             OnTokenValidated = async ctx =>
@@ -155,8 +109,6 @@ builder.Services.AddAuthentication()
                 var id = await dbContext!.AuthIds
                     .FirstOrDefaultAsync(a => a.AuthId.ToString() == ctx.Principal!.FindFirstValue("ID"));
 
-                var cookie = ctx.Request.Cookies["RC"];
-
                 if (id == null)
                 {
                     ctx.Fail(new Exception("you need to register in ViunaGuard"));
@@ -165,7 +117,7 @@ builder.Services.AddAuthentication()
                 {
                     ctx.Principal = new ClaimsPrincipal(
                         new ClaimsIdentity(
-                            new Claim[]
+                            new[]
                             {
                                 new Claim("ID", id.ViunaUserId.ToString())
                             },

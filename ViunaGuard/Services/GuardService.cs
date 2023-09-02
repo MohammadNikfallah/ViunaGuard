@@ -110,7 +110,7 @@ namespace ViunaGuard.Services
             var entranceGroup = _context.EntranceGroups
                 .Include(e => e.Entrances)
                 .ThenInclude(e => e.Person)
-                .Where(e => e.Entrances.Count>0 && e.OrganizationId == employee.OrganizationId);
+                .Where(e => e.Entrances.Count>0 && e.OrganizationId == employee!.OrganizationId);
 
             if (startDate != DateOnly.MinValue && endDate != DateOnly.MinValue)
                 entranceGroup = entranceGroup.Where(e => e.Time >= startDate.ToDateTime(TimeOnly.MinValue) 
@@ -146,7 +146,7 @@ namespace ViunaGuard.Services
             var entranceGroup = _mapper.Map<EntranceGroup>(entranceGroupPost);
 
             entranceGroup.GuardId = employeeId;
-            entranceGroup.OrganizationId = guardEmployee.OrganizationId;
+            entranceGroup.OrganizationId = guardEmployee!.OrganizationId;
 
             await _context.EntranceGroups.AddAsync(entranceGroup);
             await _context.SaveChangesAsync();

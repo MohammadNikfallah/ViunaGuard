@@ -1,8 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ViunaGuard.Dtos;
-using ViunaGuard.Models;
-using ViunaGuard.Services;
 
 namespace ViunaGuard.Controllers
 {
@@ -12,12 +9,10 @@ namespace ViunaGuard.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        private readonly DataContext _context;
 
-        public UserController(IUserService userService, DataContext context)
+        public UserController(IUserService userService)
         {
             _userService = userService;
-            _context = context;
         }
 
         [HttpPost("postCar")]

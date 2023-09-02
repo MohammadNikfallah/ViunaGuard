@@ -1,7 +1,4 @@
-﻿using ViunaGuard.Dtos;
-using ViunaGuard.Models;
-
-namespace ViunaGuard.Services
+﻿namespace ViunaGuard.Services
 {
     public interface IGuardService
     {

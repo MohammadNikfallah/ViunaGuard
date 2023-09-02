@@ -1,11 +1,6 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using Humanizer;
-using Microsoft.IdentityModel.Tokens;
-using ViunaGuard.Dtos;
-using ViunaGuard.Models;
 
 namespace ViunaGuard.Services
 {
@@ -175,7 +170,7 @@ namespace ViunaGuard.Services
             var response = new ServiceResponse<EmployeeShiftGetDto>();
             var time = DateTime.Now;
             var id = _httpContextAccessor.HttpContext!.User.FindFirstValue("ID");
-            var person = await _context.People.FindAsync(int.Parse(id));
+            var person = await _context.People.FindAsync(int.Parse(id!));
             if(person!.Jobs.Any(j => j.Id == employeeId))
             {
                 response.HttpResponseCode = 400;
@@ -216,11 +211,13 @@ namespace ViunaGuard.Services
         
         public async Task<ServiceResponse<TwoShiftGetDto>> GetPersonShifts(int employeeId)
         {
-            var response = new ServiceResponse<TwoShiftGetDto>();
-            response.Data = new TwoShiftGetDto();
+            var response = new ServiceResponse<TwoShiftGetDto>
+            {
+                Data = new TwoShiftGetDto()
+            };
             var time = DateTime.Now;
             var id = _httpContextAccessor.HttpContext!.User.FindFirstValue("ID");
-            var person = await _context.People.FindAsync(int.Parse(id));
+            var person = await _context.People.FindAsync(int.Parse(id!));
             if(person!.Jobs.Any(j => j.Id == employeeId))
             {
                 response.HttpResponseCode = 400;
@@ -234,9 +231,9 @@ namespace ViunaGuard.Services
             return response;
         }
 
-        public async Task<List<EmployeeShiftGetDto>> GetDayShifts(DateTime time, int employeeId)
+        private async Task<List<EmployeeShiftGetDto>> GetDayShifts(DateTime time, int employeeId)
         {
-            var Result = new List<EmployeeShiftGetDto>();
+            var result = new List<EmployeeShiftGetDto>();
             var periodicShift = _context.EmployeePeriodicShifts
                 .Include(e => e.GuardDoor)
                 .Where(e => e.EmployeeId == employeeId);
@@ -244,28 +241,28 @@ namespace ViunaGuard.Services
                 .Where(e => ((time.Date.DayOfYear - e.StartTime.Date.DayOfYear) % e.PeriodDayRange) == 0);
             
             var tempResult = await todayPeriodicShifts.Select(e => _mapper.Map<EmployeeShiftGetDto>(e)).ToListAsync();
-            for (int i = 0; i < tempResult.Count; i++)
+            foreach (var t in tempResult)
             {
-                tempResult[i].StartTime = tempResult[i].StartTime.AddDays(time.DayOfYear - tempResult[i].StartTime.DayOfYear);
-                tempResult[i].FinishTime = tempResult[i].FinishTime.AddDays(time.DayOfYear - tempResult[i].FinishTime.DayOfYear);
+                t.StartTime = t.StartTime.AddDays(time.DayOfYear - t.StartTime.DayOfYear);
+                t.FinishTime = t.FinishTime.AddDays(time.DayOfYear - t.FinishTime.DayOfYear);
             }
-            Result.AddRange(tempResult);
+            result.AddRange(tempResult);
 
             var shift = _context.EmployeeShifts
                 .Include(e => e.GuardDoor)
                 .Where(e => e.EmployeeId == employeeId);
             var nowShift = shift.Where(e => time.Date <= e.FinishTime.Date && time.Date >= e.StartTime.Date);
             tempResult = await nowShift.Select(e => _mapper.Map<EmployeeShiftGetDto>(e)).ToListAsync();
-            for (int i = 0; i < tempResult.Count; i++)
+            foreach (var t in tempResult)
             {
-                if (tempResult[i].StartTime.AddDays(1).Date <= time.Date)
-                    tempResult[i].StartTime = DateOnly.FromDateTime(time).ToDateTime(TimeOnly.MinValue);
-                if (tempResult[i].FinishTime.AddDays(-1).Date >= time.Date)
-                    tempResult[i].FinishTime = DateOnly.FromDateTime(time).ToDateTime(TimeOnly.MaxValue);
+                if (t.StartTime.AddDays(1).Date <= time.Date)
+                    t.StartTime = DateOnly.FromDateTime(time).ToDateTime(TimeOnly.MinValue);
+                if (t.FinishTime.AddDays(-1).Date >= time.Date)
+                    t.FinishTime = DateOnly.FromDateTime(time).ToDateTime(TimeOnly.MaxValue);
             }
-            Result.AddRange(tempResult);
+            result.AddRange(tempResult);
 
-            return Result;
+            return result;
         }
 
         public async Task<ServiceResponse<List<EntrancePermissionGetDto>>> GetEntrancePermissions()
@@ -327,6 +324,7 @@ namespace ViunaGuard.Services
             var data = await _context.Employees
                 .Include(e => e.Authority)
                 .Include(e => e.EmployeeType)
+                .Include(e => e.Organization)
                 .Where(e => e.PersonId.ToString() == id)
                 .Select(e => _mapper.Map<EmployeeGetDto>(e))
                 .ToListAsync();

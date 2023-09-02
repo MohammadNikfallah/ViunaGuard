@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using ViunaGuard.Dtos;
-
-namespace ViunaGuard.Services;
+﻿namespace ViunaGuard.Services;
 
 public interface IEmployeeService
 {
