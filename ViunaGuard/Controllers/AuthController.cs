@@ -1,10 +1,12 @@
-﻿using System.Net;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Text.Json;
+using Azure.Core;
 
 
 namespace ViunaGuard.Controllers
@@ -14,21 +16,14 @@ namespace ViunaGuard.Controllers
     public class AuthController : ControllerBase
     {
         private readonly DataContext _context;
+        private readonly IConfiguration _configuration;
+        private readonly IRefreshTokenHandler _refreshTokenHandler;
 
-        public AuthController(DataContext context)
+        public AuthController(DataContext context,IConfiguration configuration,IRefreshTokenHandler refreshTokenHandler)
         {
             _context = context;
-        }
-        
-        [HttpGet("GetToken")]
-        public IResult GetToken()
-        {
-            return Results.Challenge(
-                new AuthenticationProperties()
-                {
-                    RedirectUri = "https://localhost:7063/"
-                },
-                authenticationSchemes: new List<string>() { "OAuth" });
+            _configuration = configuration;
+            _refreshTokenHandler = refreshTokenHandler;
         }
         
         [HttpGet("Login")]
@@ -44,9 +39,9 @@ namespace ViunaGuard.Controllers
         }
         
         [HttpPost("Login")]
-        public async Task<ActionResult<object>> PostLogin(UserLogin userLogin)
+        public async Task<ActionResult> PostLogin(UserLogin userLogin)
         {
-            var httpWebRequest = (HttpWebRequest)WebRequest.Create("https://localhost:7120/api/OAuth/login");
+            var httpWebRequest = (HttpWebRequest)WebRequest.Create($"{_configuration.GetValue<string>("OauthBaseUrl")}api/OAuth/login");
             httpWebRequest.ContentType = "application/json";
             httpWebRequest.Method = "POST";
 
@@ -69,24 +64,13 @@ namespace ViunaGuard.Controllers
                 var cookieName = cookie.Split('=')[0];
                 var cookieString = cookie.Split('=')[1].Split(';')[0];
                 
-                
-                Results.Challenge(
-                    new AuthenticationProperties()
-                    {
-                        RedirectUri = "https://localhost:7063/"
-                    },
-                    authenticationSchemes: new List<string>() { "OAuth" });
-                return Task.FromResult<ActionResult<object>>(Ok());
+                Response.Cookies.Append(cookieName, cookieString);
+                return Ok();
             }
 
-            return Task.FromResult<ActionResult<object>>(BadRequest());
-            // return Results.Challenge(
-            //     new AuthenticationProperties()
-            //     {
-            //         RedirectUri = "https://localhost:7063/"
-            //     },
-            //     authenticationSchemes: new List<string>() { "OAuth" });
+            return BadRequest();
         }
+        
         /**
          *logout the user
          */
@@ -120,6 +104,50 @@ namespace ViunaGuard.Controllers
             return NotFound("Employee Not Found");
         }
 
+        [HttpGet("RefreshToken")]
+        public async Task<ActionResult> RefreshToken()
+        {
+            var refreshToken = Request.Cookies.FirstOrDefault(x => x.Key == "VRT").Value;
+            if (refreshToken == null)
+            {
+                refreshToken = Request.Headers["Authorization"];
+                if (refreshToken.StartsWith("Bearer"))
+                    refreshToken = refreshToken.Split(' ')[1];
+                else
+                    return BadRequest();
+            }
+            var tokens = await _refreshTokenHandler.AccessRefresh(refreshToken);
+            if (tokens != null)
+            {
+                var accessToken = tokens.RootElement.GetString("access_token");
+                if (accessToken == null)
+                {
+                    return BadRequest();
+                }
+                Response.Cookies.Append("VAT", accessToken!, new CookieOptions
+                {
+                    Expires = DateTime.Now.AddMinutes(10),
+                    HttpOnly = true,
+                    SameSite = SameSiteMode.Strict,
+                    Secure = true
+                });
+                Response.Cookies.Append("VRT", tokens.RootElement.GetString("refresh_token")!, new CookieOptions
+                {
+                    Expires = DateTime.Now.AddDays(30),
+                    HttpOnly = true,
+                    SameSite = SameSiteMode.Strict,
+                    Secure = true
+                });
+                return Ok(new
+                {
+                    AccessToken = accessToken,
+                    RefreshToken = tokens.RootElement.GetString("refresh_token")!
+                });
+            }
+
+            return StatusCode(500);
+        }
+
         [HttpGet("Test")]
         [Authorize]
         [Authorize(Policy = "RoleCookie")]
@@ -127,8 +155,6 @@ namespace ViunaGuard.Controllers
         {
             return Ok();
         }
-
-
 
     }
 }

@@ -3,7 +3,6 @@ global using ViunaGuard.Services;
 global using ViunaGuard.Models;
 global using ViunaGuard.Dtos;
 global using ViunaGuard.Models.Enums;
-using System.Globalization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -12,7 +11,6 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.HttpLogging;
@@ -53,7 +51,6 @@ builder.Services.AddHttpLogging(logging =>
     logging.RequestHeaders.Add("Cookie");
     logging.RequestHeaders.Add("Authorize");
     logging.ResponseHeaders.Add("Set-Cookie");
-    // logging.MediaTypeOptions.AddText("application/json");
     logging.RequestBodyLogLimit = 4096;
     logging.ResponseBodyLogLimit = 4096;
 });
@@ -62,12 +59,9 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IGuardService, GuardService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+builder.Services.AddScoped<IRefreshTokenHandler, RefreshTokenHandlerClass>();
 
 builder.Services.AddAuthentication()
-    .AddCookie("RoleCookie", options =>
-    {
-        options.Cookie.Name = "RC";
-    })
     .AddCookie("Cookie", options =>
     {
         options.Cookie.Name = "ClientCookie";
@@ -103,82 +97,55 @@ builder.Services.AddAuthentication()
                 if (ctx.Token == null) {
                     if (ctx.Request.Cookies.ContainsKey("VAT"))
                         ctx.Token = ctx.Request.Cookies["VAT"];
-                    else if (ctx.Request.Cookies.ContainsKey("VRT"))
-                    {
-                        var tokens = await AccessRefresh(ctx.Request.Cookies["VRT"]!);
-                        if (tokens != null)
-                        {
-                            var accessToken = tokens.RootElement.GetString("access_token");
-                            ctx.Response.Cookies.Append("VAT", accessToken!, new CookieOptions
-                            {
-                                Expires = DateTime.Now.AddMinutes(10),
-                                HttpOnly = true,
-                                SameSite = SameSiteMode.Strict,
-                                Secure = true
-                            });
-                            ctx.Response.Cookies.Append("VRT", tokens.RootElement.GetString("refresh_token")!, new CookieOptions
-                            {
-                                Expires = DateTime.Now.AddDays(30),
-                                HttpOnly = true,
-                                SameSite = SameSiteMode.Strict,
-                                Secure = true
-                            });
-                            ctx.Token = accessToken;
-                        }
-                    }
-                    else
-                    {
-                        ctx.Response.Cookies.Delete("RC");
-                    }
                 }
             },
 
             OnAuthenticationFailed = async ctx =>
             {
-                var refreshToken = ctx.Request.Cookies.FirstOrDefault(x => x.Key == "VRT").Value;
-                if (ctx.Exception.GetType() == typeof(SecurityTokenExpiredException) && refreshToken != null)
-                {
-                    var tokens = await AccessRefresh(refreshToken);
-                    if (tokens != null)
-                    {
-                        var accessToken = tokens.RootElement.GetString("access_token");
-                        ctx.Response.Cookies.Append("VAT", accessToken!, new CookieOptions
-                        {
-                            Expires = DateTime.Now.AddMinutes(10),
-                            HttpOnly = true,
-                            SameSite = SameSiteMode.Strict,
-                            Secure = true
-                        });
-                        ctx.Response.Cookies.Append("VRT", tokens.RootElement.GetString("refresh_token")!, new CookieOptions
-                        {
-                            Expires = DateTime.Now.AddDays(30),
-                            HttpOnly = true,
-                            SameSite = SameSiteMode.Strict,
-                            Secure = true
-                        });
-
-                        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
-
-                        var sp = builder.Services.BuildServiceProvider();
-                        var dbContext = sp.GetService<DataContext>();
-                        var claim = jwt.Claims.First(c => c.Type == "ID").Value;
-                        var id = await dbContext.AuthIds
-                            .FirstOrDefaultAsync(a => a.AuthId.ToString() == claim);
-
-                        File.AppendAllText("log", id.ViunaUserId.ToString() + "\n");
-
-                        ctx.Principal = new ClaimsPrincipal(
-                                    new ClaimsIdentity(
-                                        new Claim[]
-                                        {
-                                            new Claim("ID", id.ViunaUserId.ToString())
-                                        },
-                                        "Cookie"
-                                        ));
-                        ctx.Success();
-                    }
-                }
-                ctx.Response.Cookies.Delete("RC");
+                // var refreshToken = ctx.Request.Cookies.FirstOrDefault(x => x.Key == "VRT").Value;
+                // if (ctx.Exception.GetType() == typeof(SecurityTokenExpiredException) && refreshToken != null)
+                // {
+                //     var tokens = await AccessRefresh(refreshToken);
+                //     if (tokens != null)
+                //     {
+                //         var accessToken = tokens.RootElement.GetString("access_token");
+                //         ctx.Response.Cookies.Append("VAT", accessToken!, new CookieOptions
+                //         {
+                //             Expires = DateTime.Now.AddMinutes(10),
+                //             HttpOnly = true,
+                //             SameSite = SameSiteMode.Strict,
+                //             Secure = true
+                //         });
+                //         ctx.Response.Cookies.Append("VRT", tokens.RootElement.GetString("refresh_token")!, new CookieOptions
+                //         {
+                //             Expires = DateTime.Now.AddDays(30),
+                //             HttpOnly = true,
+                //             SameSite = SameSiteMode.Strict,
+                //             Secure = true
+                //         });
+                //
+                //         var jwt = new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
+                //
+                //         var sp = builder.Services.BuildServiceProvider();
+                //         var dbContext = sp.GetService<DataContext>();
+                //         var claim = jwt.Claims.First(c => c.Type == "ID").Value;
+                //         var id = await dbContext.AuthIds
+                //             .FirstOrDefaultAsync(a => a.AuthId.ToString() == claim);
+                //
+                //         File.AppendAllText("log", id.ViunaUserId.ToString() + "\n");
+                //
+                //         ctx.Principal = new ClaimsPrincipal(
+                //                     new ClaimsIdentity(
+                //                         new Claim[]
+                //                         {
+                //                             new Claim("ID", id.ViunaUserId.ToString())
+                //                         },
+                //                         "Cookie"
+                //                         ));
+                //         ctx.Success();
+                //     }
+                // }
+                // ctx.Response.Cookies.Delete("RC");
             },
 
             OnTokenValidated = async ctx =>
@@ -187,6 +154,8 @@ builder.Services.AddAuthentication()
                 var dbContext = sp.GetService<DataContext>();
                 var id = await dbContext!.AuthIds
                     .FirstOrDefaultAsync(a => a.AuthId.ToString() == ctx.Principal!.FindFirstValue("ID"));
+
+                var cookie = ctx.Request.Cookies["RC"];
 
                 if (id == null)
                 {
@@ -225,7 +194,10 @@ builder.Services.AddAuthentication()
             var payloadBase64 = x.AccessToken!.Split(".")[1];
             var payloadJson = Base64UrlTextEncoder.Decode(payloadBase64);
             var payload = JsonDocument.Parse(payloadJson);
-            x.RunClaimActions(payload.RootElement); ;
+            x.RunClaimActions(payload.RootElement);
+            
+            x.Response.Headers.Add("Refresh-token",x.RefreshToken);
+            x.Response.Headers.Add("Access-token",x.AccessToken);
             x.Response.Cookies.Append("VAT", x.AccessToken);
             x.Response.Cookies.Append("VRT", x.RefreshToken!);
             x.Response.Cookies.Delete("ClientCookie");
@@ -262,11 +234,6 @@ builder.Services.AddAuthorization(o =>
         .RequireAuthenticatedUser()
         .AddAuthenticationSchemes("JwtBearer")
         .Build();
-
-    o.AddPolicy("RoleCookie", new AuthorizationPolicyBuilder()
-        .RequireAuthenticatedUser()
-        .AddAuthenticationSchemes("RoleCookie")
-        .Build());
 });
 
 var app = builder.Build();
@@ -286,18 +253,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
-async Task<JsonDocument> AccessRefresh(string refreshToken)
-{
-    File.AppendAllText("log", DateTime.Now + " : refreshing the access token\n");
-    var request = new RtRequest()
-    {
-        ClientId = "12345",
-        ClientSecret = "secretTest",
-        RefreshToken = refreshToken,
-        TokenEndpoint = $"{oauthBaseUrl}api/OAuth/token"
-    };
-
-    var tokens = await RefreshTokenHandlerClass.RefreshTokenHandler(request);
-    return tokens;
-}

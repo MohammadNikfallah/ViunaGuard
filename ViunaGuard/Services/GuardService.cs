@@ -57,12 +57,12 @@ namespace ViunaGuard.Services
         //     return response;
         // }
         public async Task<ServiceResponse<List<EntranceGroupGetDto>>> GetEntrances(DateOnly startDate, DateOnly endDate, int doorId
-            , int guardId, int enterOrExitId)
+            , int guardId, int enterOrExitId, int employeeId)
         {
             var response = new ServiceResponse<List<EntranceGroupGetDto>>();
 
-            var employeeId = _httpContextAccessor.HttpContext!.User.FindFirstValue("EmployeeId");
-            var employee = await _context.Employees.FindAsync(int.Parse(employeeId));
+            // var employeeId = _httpContextAccessor.HttpContext!.User.FindFirstValue("EmployeeId");
+            var employee = await _context.Employees.FindAsync(employeeId);
 
             if (employee!.PersonId.ToString() != _httpContextAccessor.HttpContext.User.Claims.First(c => c.Type == "ID").Value)
             {
@@ -95,17 +95,14 @@ namespace ViunaGuard.Services
         
 
         public async Task<ServiceResponse<object>> PostEntrances
-            (EntranceGroupPostDto entranceGroupPost)
+            (EntranceGroupPostDto entranceGroupPost, int employeeId)
         {
 
             var response = new ServiceResponse<object>();
 
             var entranceGroup = _mapper.Map<EntranceGroup>(entranceGroupPost);
             
-            var guardId = _httpContextAccessor.HttpContext!.User.FindFirstValue("EmployeeId");
-            var guardEmployee = await _context.Employees.FindAsync(int.Parse(guardId));
-            File.AppendAllText("log","guardId :");
-            File.AppendAllText("log",guardId + "\n");   
+            var guardEmployee = await _context.Employees.FindAsync(employeeId);
             
             if (guardEmployee == null)
             {
@@ -113,7 +110,7 @@ namespace ViunaGuard.Services
                 response.Message = "Something is wrong with EmployeeId";
                 return response;
             }
-            entranceGroup.GuardId = int.Parse(guardId!);
+            entranceGroup.GuardId = employeeId;
             entranceGroup.OrganizationId = guardEmployee.OrganizationId;
 
             var entranceGroupContext = await _context.EntranceGroups.AddAsync(entranceGroup);

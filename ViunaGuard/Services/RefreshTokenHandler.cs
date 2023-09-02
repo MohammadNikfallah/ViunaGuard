@@ -3,8 +3,29 @@ using System.Text.Json;
 
 namespace ViunaGuard.Services
 {
-    public class RefreshTokenHandlerClass
+    public class RefreshTokenHandlerClass : IRefreshTokenHandler
     {
+        private readonly IConfiguration _configuration;
+
+        public RefreshTokenHandlerClass(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+        
+        public async Task<JsonDocument> AccessRefresh(string refreshToken)
+        {
+            System.IO.File.AppendAllText("log", DateTime.Now + " : refreshing the access token\n");
+            var request = new RtRequest()
+            {
+                ClientId = "12345",
+                ClientSecret = "secretTest",
+                RefreshToken = refreshToken,
+                TokenEndpoint = $"{_configuration.GetValue<string>("OauthBaseUrl")}api/OAuth/token"
+            };
+
+            var tokens = await RefreshTokenHandlerClass.RefreshTokenHandler(request);
+            return tokens;
+        }
         public static async Task<JsonDocument> RefreshTokenHandler(RtRequest request)
         {
             var tokenRequestParameters = new Dictionary<string, string>()

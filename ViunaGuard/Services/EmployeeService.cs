@@ -18,7 +18,7 @@ public class EmployeeService : IEmployeeService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task<ServiceResponse> PostPeriodicShift(PeriodicShiftPostDto shift)
+    public async Task<ServiceResponse> PostPeriodicShift(PeriodicShiftPostDto shift, int employeeId)
     {
         var response = new ServiceResponse();
 
@@ -29,7 +29,6 @@ public class EmployeeService : IEmployeeService
             response.Message = "Something is wrong with EmployeeId Claim";
             return response;
         }
-        var employeeId = int.Parse(employeeClaim);
         var employee = await _context.Employees.FindAsync(employeeId);
         
         var employeePeriodicShift = _mapper.Map<EmployeePeriodicShift>(shift);
@@ -43,18 +42,10 @@ public class EmployeeService : IEmployeeService
         return response;
     }
 
-    public async Task<ServiceResponse<List<EmployeeShift>>> PostShift(ShiftPostDto shift)
+    public async Task<ServiceResponse<List<EmployeeShift>>> PostShift(ShiftPostDto shift, int employeeId)
     {
         var response = new ServiceResponse<List<EmployeeShift>>();
-        
-        var employeeClaim = _httpContextAccessor.HttpContext.User.FindFirstValue("EmployeeId");
-        if (employeeClaim == null)
-        {
-            response.HttpResponseCode = 400;
-            response.Message = "Something is wrong with EmployeeId Claim";
-            return response;
-        }
-        var employeeId = int.Parse(employeeClaim);
+
         var employee = await _context.Employees.FindAsync(employeeId);
 
         var shiftEmployee = await _context.Employees.FindAsync(shift.EmployeeId);
@@ -86,19 +77,10 @@ public class EmployeeService : IEmployeeService
         return response;
     }
 
-    public async Task<ServiceResponse<TwoShiftGetDto>> GetEmployeeShifts()
+    public async Task<ServiceResponse<TwoShiftGetDto>> GetEmployeeShifts(int employeeId)
     {
         var response = new ServiceResponse<TwoShiftGetDto>();
-        
-        var employeeClaim = _httpContextAccessor.HttpContext.User.FindFirstValue("EmployeeId");
-        if (employeeClaim == null)
-        {
-            response.HttpResponseCode = 400;
-            response.Message = "Something is wrong with EmployeeId Claim";
-            return response;
-        }
-        var employeeId = int.Parse(employeeClaim);
-        
+
         response.Data = new TwoShiftGetDto();
         var time = DateTime.Now;
         var id = _httpContextAccessor.HttpContext!.User.FindFirstValue("ID");
@@ -170,19 +152,10 @@ public class EmployeeService : IEmployeeService
         return Result;
     }
 
-    public async Task<ServiceResponse<EmployeeShiftGetDto>> GetCurrentShift()
+    public async Task<ServiceResponse<EmployeeShiftGetDto>> GetCurrentShift(int employeeId)
     {
         var response = new ServiceResponse<EmployeeShiftGetDto>();
-        
-        var employeeClaim = _httpContextAccessor.HttpContext.User.FindFirstValue("EmployeeId");
-        if (employeeClaim == null)
-        {
-            response.HttpResponseCode = 400;
-            response.Message = "Something is wrong with EmployeeId Claim";
-            return response;
-        }
-        var employeeId = int.Parse(employeeClaim);
-        
+
         var time = DateTime.Now;
         var id = _httpContextAccessor.HttpContext!.User.FindFirstValue("ID");
         var person = await _context.People.FindAsync(int.Parse(id));
@@ -252,7 +225,7 @@ public class EmployeeService : IEmployeeService
         return response;
     }
 
-    public async Task<ServiceResponse> PostEmployee(EmployeePostDto employeePostDto)
+    public async Task<ServiceResponse> PostEmployee(EmployeePostDto employeePostDto, int employeeId)
     {
         var employee = _mapper.Map<Employee>(employeePostDto);
         await _context.Employees.AddAsync(employee);
@@ -261,18 +234,10 @@ public class EmployeeService : IEmployeeService
         throw new NotImplementedException();
     }
 
-    public async Task<ServiceResponse> PostEmployeeWeeklyShift(WeeklyShiftPostDto weeklyShiftPostDto)
+    public async Task<ServiceResponse> PostEmployeeWeeklyShift(WeeklyShiftPostDto weeklyShiftPostDto, int employeeId)
     {
         var response = new ServiceResponse();
         
-        var employeeClaim = _httpContextAccessor.HttpContext.User.FindFirstValue("EmployeeId");
-        if (employeeClaim == null)
-        {
-            response.HttpResponseCode = 400;
-            response.Message = "Something is wrong with EmployeeId Claim";
-            return response;
-        }
-        var employeeId = int.Parse(employeeClaim);
         var employee = await _context.Employees.FindAsync(employeeId);
 
         var shiftEmployee = await _context.Employees.FindAsync(weeklyShiftPostDto.EmployeeId);
@@ -313,18 +278,10 @@ public class EmployeeService : IEmployeeService
         return response;
     }
 
-    public async Task<ServiceResponse> PostEmployeeMonthlyShift(MonthlyShiftPostDto monthlyShiftPostDto)
+    public async Task<ServiceResponse> PostEmployeeMonthlyShift(MonthlyShiftPostDto monthlyShiftPostDto, int employeeId)
     {
         var response = new ServiceResponse();
         
-        var employeeClaim = _httpContextAccessor.HttpContext.User.FindFirstValue("EmployeeId");
-        if (employeeClaim == null)
-        {
-            response.HttpResponseCode = 400;
-            response.Message = "Something is wrong with EmployeeId Claim";
-            return response;
-        }
-        var employeeId = int.Parse(employeeClaim);
         var employee = await _context.Employees.FindAsync(employeeId);
 
         var shiftEmployee = await _context.Employees.FindAsync(monthlyShiftPostDto.EmployeeId);

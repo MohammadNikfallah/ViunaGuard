@@ -9,7 +9,6 @@ namespace ViunaGuard.Controllers
     [Route("[controller]")]
     [ApiController]
     [Authorize]
-    [Authorize(Roles = "Guard", Policy = "RoleCookie")]
     public class GuardController : ControllerBase
     {
         private readonly IGuardService _guardService;
@@ -23,27 +22,12 @@ namespace ViunaGuard.Controllers
             _mapper = mapper;
         }
 
-        // [HttpGet("GetEntrances")]
-        // public async Task<ActionResult<List<EntranceGetDto>>> GetEntrances(DateOnly startDate, DateOnly endDate, int doorId
-        //     , int personId, int organizationId, int carId, int guardId, int entranceTypeId, int enterOrExitId)
-        // {
-        //     var response = await  _guardService.GetEntrances
-        //         (startDate, endDate, doorId, personId, carId, guardId, enterOrExitId);
-        //
-        //     if (response.HttpResponseCode == 200)
-        //         return Ok(response.Data);
-        //     else if (response.HttpResponseCode == 404)
-        //         return NotFound(response.Message);
-        //     else
-        //         return BadRequest(response.Message);
-        // }
-        
         [HttpGet("GetEntrances")]
         public async Task<ActionResult<List<EntranceGroupGetDto>>> GetEntrances([Required] DateOnly startDate,[Required] DateOnly endDate
-            , int doorId, int guardId, int enterOrExitId)
+            , int doorId, int guardId, int enterOrExitId, int employeeId)
         {
             var response = await  _guardService.GetEntrances
-                (startDate, endDate, doorId, guardId, enterOrExitId);
+                (startDate, endDate, doorId, guardId, enterOrExitId, employeeId);
         
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
@@ -67,7 +51,7 @@ namespace ViunaGuard.Controllers
         // }
         
         [HttpGet("GetCar")]
-        public async Task<ActionResult<Car>> GetCar(int carId)
+        public async Task<ActionResult<Car>> GetCar(int carId, int employeeId)
         {
             var car = await _context.Cars.FindAsync(carId);
             if (car == null)
@@ -76,7 +60,7 @@ namespace ViunaGuard.Controllers
         }
         
         [HttpGet("GetDoors")]
-        public async Task<ActionResult<List<DoorGetDto>>> GetDoors()
+        public async Task<ActionResult<List<DoorGetDto>>> GetDoors(int employeeId)
         {
             var guardId = HttpContext.User.FindFirst("EmployeeId");
             var guard = await _context.Employees.FindAsync(int.Parse(guardId!.Value));
@@ -87,9 +71,9 @@ namespace ViunaGuard.Controllers
         
         [HttpPost("PostEntrances")]
         public async Task<ActionResult> PostSameGroupEntrances
-            (EntranceGroupPostDto entranceGroupPost)
+            (EntranceGroupPostDto entranceGroupPost, int employeeId)
         {
-            var response = await _guardService.PostEntrances(entranceGroupPost);
+            var response = await _guardService.PostEntrances(entranceGroupPost, employeeId);
             if (response.HttpResponseCode == 200)
                 return Ok();
             else if (response.HttpResponseCode == 404)
@@ -99,7 +83,7 @@ namespace ViunaGuard.Controllers
         }
         
         [HttpGet("GetCars")]
-        public async Task<ActionResult<List<Car>>> GetCars (string licenseNumber)
+        public async Task<ActionResult<List<Car>>> GetCars (string licenseNumber, int employeeId)
         {
             var response = new ServiceResponse<List<Car>>();
             response.Data = await _context.Cars.Where(car => car.LicenseNumber == licenseNumber).ToListAsync();
