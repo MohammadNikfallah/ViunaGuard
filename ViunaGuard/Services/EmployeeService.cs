@@ -21,16 +21,9 @@ public class EmployeeService : IEmployeeService
     public async Task<ServiceResponse> PostPeriodicShift(PeriodicShiftPostDto shift, int employeeId)
     {
         var response = new ServiceResponse();
-
-        var employeeClaim = _httpContextAccessor.HttpContext!.User.FindFirstValue("EmployeeId");
-        if (employeeClaim == null)
-        {
-            response.HttpResponseCode = 400;
-            response.Message = "Something is wrong with EmployeeId Claim";
-            return response;
-        }
         var employee = await _context.Employees.FindAsync(employeeId);
-        
+        if (CheckEmployeeId(employee, response, out var serviceResponse)) return serviceResponse;
+
         var employeePeriodicShift = _mapper.Map<EmployeePeriodicShift>(shift);
         employeePeriodicShift.OrganizationId = employee.OrganizationId;
         employeePeriodicShift.ShiftMakerEmployeeId = employeeId;
@@ -42,11 +35,43 @@ public class EmployeeService : IEmployeeService
         return response;
     }
 
+    private bool CheckEmployeeId(Employee? employee, ServiceResponse response, out ServiceResponse serviceResponse)
+    {
+        if (employee == null)
+        {
+            response.HttpResponseCode = 400;
+            response.Message = "There is no Employee with this id";
+            {
+                serviceResponse = response;
+                return true;
+            }
+        }
+
+        var userId = _httpContextAccessor.HttpContext!.User.FindFirstValue("ID");
+        if (employee.PersonId != int.Parse(userId!))
+        {
+            response.HttpResponseCode = 400;
+            response.Message = "You cant access this employee";
+            {
+                serviceResponse = response;
+                return true;
+            }
+        }
+
+        serviceResponse = new ServiceResponse();
+        return false;
+    }
+
     public async Task<ServiceResponse<List<EmployeeShift>>> PostShift(ShiftPostDto shift, int employeeId)
     {
         var response = new ServiceResponse<List<EmployeeShift>>();
-
         var employee = await _context.Employees.FindAsync(employeeId);
+        if (CheckEmployeeId(employee, response, out var serviceResponse))
+        {
+            response.Message = serviceResponse.Message;
+            response.HttpResponseCode = serviceResponse.HttpResponseCode;
+            return response;
+        }
 
         var shiftEmployee = await _context.Employees.FindAsync(shift.EmployeeId);
         if (shiftEmployee == null)
@@ -80,17 +105,16 @@ public class EmployeeService : IEmployeeService
     public async Task<ServiceResponse<TwoShiftGetDto>> GetEmployeeShifts(int employeeId)
     {
         var response = new ServiceResponse<TwoShiftGetDto>();
+        var employee = await _context.Employees.FindAsync(employeeId);
+        if (CheckEmployeeId(employee, response, out var serviceResponse))
+        {
+            response.Message = serviceResponse.Message;
+            response.HttpResponseCode = serviceResponse.HttpResponseCode;
+            return response;
+        }
 
         response.Data = new TwoShiftGetDto();
         var time = DateTime.Now;
-        var id = _httpContextAccessor.HttpContext!.User.FindFirstValue("ID");
-        var person = await _context.People.FindAsync(int.Parse(id));
-        if(person!.Jobs.Any(j => j.Id == employeeId))
-        {
-            response.HttpResponseCode = 400;
-            response.Message = "Something wrong with EmployeeId";
-            return response;
-        }
 
         response.Data.TodayShifts.AddRange(await GetDayShifts(time, employeeId));
         response.Data.TomorrowShifts.AddRange(await GetDayShifts(time.AddDays(1), employeeId));
@@ -155,16 +179,15 @@ public class EmployeeService : IEmployeeService
     public async Task<ServiceResponse<EmployeeShiftGetDto>> GetCurrentShift(int employeeId)
     {
         var response = new ServiceResponse<EmployeeShiftGetDto>();
-
-        var time = DateTime.Now;
-        var id = _httpContextAccessor.HttpContext!.User.FindFirstValue("ID");
-        var person = await _context.People.FindAsync(int.Parse(id));
-        if(person!.Jobs.Any(j => j.Id == employeeId))
+        var employee = await _context.Employees.FindAsync(employeeId);
+        if (CheckEmployeeId(employee, response, out var serviceResponse))
         {
-            response.HttpResponseCode = 400;
-            response.Message = "Something wrong with EmployeeId";
+            response.Message = serviceResponse.Message;
+            response.HttpResponseCode = serviceResponse.HttpResponseCode;
             return response;
         }
+
+        var time = DateTime.Now;
             
         var periodicShift = _context.EmployeePeriodicShifts
             .Include(e => e.GuardDoor)
@@ -237,14 +260,14 @@ public class EmployeeService : IEmployeeService
     public async Task<ServiceResponse> PostEmployeeWeeklyShift(WeeklyShiftPostDto weeklyShiftPostDto, int employeeId)
     {
         var response = new ServiceResponse();
-        
         var employee = await _context.Employees.FindAsync(employeeId);
+        if (CheckEmployeeId(employee, response, out var serviceResponse)) return serviceResponse;
 
         var shiftEmployee = await _context.Employees.FindAsync(weeklyShiftPostDto.EmployeeId);
         if (shiftEmployee == null)
         {
             response.HttpResponseCode = 404;
-            response.Message = "Employee Not Found";
+            response.Message = "Target Employee Not Found";
             return response;
         }
 
@@ -281,8 +304,8 @@ public class EmployeeService : IEmployeeService
     public async Task<ServiceResponse> PostEmployeeMonthlyShift(MonthlyShiftPostDto monthlyShiftPostDto, int employeeId)
     {
         var response = new ServiceResponse();
-        
         var employee = await _context.Employees.FindAsync(employeeId);
+        if (CheckEmployeeId(employee, response, out var serviceResponse)) return serviceResponse;
 
         var shiftEmployee = await _context.Employees.FindAsync(monthlyShiftPostDto.EmployeeId);
         if (shiftEmployee == null)

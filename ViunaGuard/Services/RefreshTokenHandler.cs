@@ -20,7 +20,7 @@ namespace ViunaGuard.Services
                 ClientId = "12345",
                 ClientSecret = "secretTest",
                 RefreshToken = refreshToken,
-                TokenEndpoint = $"{_configuration.GetValue<string>("OauthBaseUrl")}api/OAuth/token"
+                TokenEndpoint = $"{_configuration.GetValue<string>("Constants:OauthBaseUrl")}api/OAuth/token"
             };
 
             var tokens = await RefreshTokenHandlerClass.RefreshTokenHandler(request);

@@ -41,7 +41,7 @@ namespace ViunaGuard.Controllers
         [HttpPost("Login")]
         public async Task<ActionResult> PostLogin(UserLogin userLogin)
         {
-            var httpWebRequest = (HttpWebRequest)WebRequest.Create($"{_configuration.GetValue<string>("OauthBaseUrl")}api/OAuth/login");
+            var httpWebRequest = (HttpWebRequest)WebRequest.Create($"{_configuration.GetValue<string>("Constants:OauthBaseUrl")}api/OAuth/login");
             httpWebRequest.ContentType = "application/json";
             httpWebRequest.Method = "POST";
 

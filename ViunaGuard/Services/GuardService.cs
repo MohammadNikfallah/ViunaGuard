@@ -9,14 +9,53 @@ namespace ViunaGuard.Services
         private readonly DataContext _context;
         private readonly IMapper _mapper;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IConfiguration _configuration;
 
-        public GuardService(DataContext context, IMapper mapper, IHttpContextAccessor httpContextAccessor)
+        public GuardService(DataContext context, IMapper mapper, IHttpContextAccessor httpContextAccessor, IConfiguration configuration)
         {
             _context = context;
             _mapper = mapper;
             _httpContextAccessor = httpContextAccessor;
+            _configuration = configuration;
         }
 
+        private bool CheckGuardId(Employee? employee, ServiceResponse response, out ServiceResponse serviceResponse)
+        {
+            if (employee == null)
+            {
+                response.HttpResponseCode = 400;
+                response.Message = "There is no Employee with this id";
+                {
+                    serviceResponse = response;
+                    return true;
+                }
+            }
+
+            var userId = _httpContextAccessor.HttpContext!.User.FindFirstValue("ID");
+            if (employee.PersonId != int.Parse(userId!))
+            {
+                response.HttpResponseCode = 400;
+                response.Message = "You cant access this employee";
+                {
+                    serviceResponse = response;
+                    return true;
+                }
+            }
+            
+            if (employee.EmployeeTypeId != _configuration.GetValue<int>("Constants:GuardEmployeeTypeId"))
+            {
+                response.HttpResponseCode = 400;
+                response.Message = "You need to be Guard to access this Section";
+                {
+                    serviceResponse = response;
+                    return true;
+                }
+            }
+
+            serviceResponse = new ServiceResponse();
+            return false;
+        }
+        
         // public async Task<ServiceResponse<List<EntranceGetDto>>> GetEntrances(DateOnly startDate, DateOnly endDate, int doorId
         //     , int personId, int carId, int guardId, int enterOrExitId)
         // {
@@ -60,14 +99,11 @@ namespace ViunaGuard.Services
             , int guardId, int enterOrExitId, int employeeId)
         {
             var response = new ServiceResponse<List<EntranceGroupGetDto>>();
-
-            // var employeeId = _httpContextAccessor.HttpContext!.User.FindFirstValue("EmployeeId");
             var employee = await _context.Employees.FindAsync(employeeId);
-
-            if (employee!.PersonId.ToString() != _httpContextAccessor.HttpContext.User.Claims.First(c => c.Type == "ID").Value)
+            if (CheckGuardId(employee, response, out var serviceResponse))
             {
-                response.HttpResponseCode = 400;
-                response.Message = "Something wrong with EmployeeID";
+                response.HttpResponseCode = serviceResponse.HttpResponseCode;
+                response.Message = serviceResponse.Message;
                 return response;
             }
 
@@ -99,24 +135,22 @@ namespace ViunaGuard.Services
         {
 
             var response = new ServiceResponse<object>();
-
-            var entranceGroup = _mapper.Map<EntranceGroup>(entranceGroupPost);
-            
             var guardEmployee = await _context.Employees.FindAsync(employeeId);
-            
-            if (guardEmployee == null)
+            if (CheckGuardId(guardEmployee, response, out var serviceResponse))
             {
-                response.HttpResponseCode = 400;
-                response.Message = "Something is wrong with EmployeeId";
+                response.HttpResponseCode = serviceResponse.HttpResponseCode;
+                response.Message = serviceResponse.Message;
                 return response;
             }
+
+            var entranceGroup = _mapper.Map<EntranceGroup>(entranceGroupPost);
+
             entranceGroup.GuardId = employeeId;
             entranceGroup.OrganizationId = guardEmployee.OrganizationId;
 
-            var entranceGroupContext = await _context.EntranceGroups.AddAsync(entranceGroup);
+            await _context.EntranceGroups.AddAsync(entranceGroup);
             await _context.SaveChangesAsync();
 
-            await _context.SaveChangesAsync();
             response.HttpResponseCode = 200;
             response.Data = new();
             return response;

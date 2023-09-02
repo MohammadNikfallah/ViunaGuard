@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.HttpLogging;
 var builder = WebApplication.CreateBuilder(args);
 
 string responseString = "";
-string oauthBaseUrl = builder.Configuration.GetValue<string>("OauthBaseUrl")!;
+string oauthBaseUrl = builder.Configuration.GetValue<string>("Constants:OauthBaseUrl")!;
 // string OAUTH_BASE_URL = "https://localhost:7120/";
 
 try
