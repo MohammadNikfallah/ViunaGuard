@@ -107,7 +107,7 @@ namespace ViunaGuard.Migrations
 
                     b.Property<string>("LicenseNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int?>("ModelId")
                         .HasColumnType("int");
@@ -121,6 +121,9 @@ namespace ViunaGuard.Migrations
                     b.HasIndex("BrandId");
 
                     b.HasIndex("ColorId");
+
+                    b.HasIndex("LicenseNumber")
+                        .IsUnique();
 
                     b.HasIndex("ModelId");
 
@@ -861,6 +864,12 @@ namespace ViunaGuard.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool>("CanInviteGuests")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanSeeOtherDoorsEntrances")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanSeeOtherGuardsEntrances")
                         .HasColumnType("bit");
 
                     b.HasKey("Id");

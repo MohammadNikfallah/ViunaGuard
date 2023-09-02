@@ -12,7 +12,10 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using System.Security.Claims;
+using System.Text;
 using System.Text.Json;
+using Azure.Core;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.HttpLogging;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -49,7 +52,7 @@ builder.Services.AddHttpLogging(logging =>
     logging.RequestHeaders.Add("sec-fetch-dest");
     logging.RequestHeaders.Add("sec-fetch-user");
     logging.RequestHeaders.Add("Cookie");
-    logging.RequestHeaders.Add("Authorize");
+    logging.RequestHeaders.Add("Authorization");
     logging.ResponseHeaders.Add("Set-Cookie");
     logging.RequestBodyLogLimit = 4096;
     logging.ResponseBodyLogLimit = 4096;
@@ -111,7 +114,7 @@ builder.Services.AddAuthentication()
 
                 if (id == null)
                 {
-                    ctx.Fail(new Exception("you need to register in ViunaGuard"));
+                    ctx.Fail("you need to register in ViunaGuard");
                 }
                 else
                 {
@@ -130,31 +133,43 @@ builder.Services.AddAuthentication()
     .AddOAuth("OAuth", o =>
     {
         o.SignInScheme = "Cookie";
-        o.CorrelationCookie.SameSite = SameSiteMode.None;
-        o.CorrelationCookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-
         o.ClientId = "12345";
         o.ClientSecret = "secretTest";
 
         o.AuthorizationEndpoint = $"{oauthBaseUrl}api/OAuth/authorize";
         o.TokenEndpoint = $"{oauthBaseUrl}api/OAuth/token";
-        o.CallbackPath = "/api/custom_cb";
+        o.CallbackPath = "/Auth/custom_cb";
+        o.Events.OnTicketReceived = x =>
+        {
+            x.ReturnUri = "https://localhost:7063/test";
+            return Task.CompletedTask;
+        };
 
-        o.UsePkce = false;
-        o.Events.OnCreatingTicket = x =>
+        o.UsePkce = true;
+        o.Events.OnCreatingTicket = async x =>
         {
             var payloadBase64 = x.AccessToken!.Split(".")[1];
             var payloadJson = Base64UrlTextEncoder.Decode(payloadBase64);
             var payload = JsonDocument.Parse(payloadJson);
             x.RunClaimActions(payload.RootElement);
+
+            var tokens = new Tokens
+            {
+                RefreshToken = x.RefreshToken,
+                AccessToken = x.AccessToken
+            };
+
+            var responsePayload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(tokens));
             
             x.Response.Headers.Add("Refresh-token",x.RefreshToken);
             x.Response.Headers.Add("Access-token",x.AccessToken);
+            // await x.Response.Body.WriteAsync(responsePayload);
+            // x.Response.StatusCode = 200;
+            // x.Response.Body.Write(responsePayload);
             x.Response.Cookies.Append("VAT", x.AccessToken);
             x.Response.Cookies.Append("VRT", x.RefreshToken!);
             x.Response.Cookies.Delete("ClientCookie");
 
-            return Task.CompletedTask;
         };
     });
 
@@ -205,3 +220,9 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+internal class Tokens
+{
+    public string RefreshToken { get; set; }
+    public string AccessToken { get; set; }
+}

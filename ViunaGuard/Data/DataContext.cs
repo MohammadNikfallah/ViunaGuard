@@ -25,15 +25,22 @@ namespace ViunaGuard.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Person>().HasMany(e => e.Cars)
-                           .WithMany(e => e.People);
+            modelBuilder.Entity<Person>()
+                .HasMany(e => e.Cars)
+                .WithMany(e => e.People);
 
-            modelBuilder.Entity<Person>().HasIndex(p => p.NationalId).IsUnique();
+            modelBuilder.Entity<Person>()
+                .HasIndex(p => p.NationalId)
+                .IsUnique();
 
             modelBuilder.Entity<Organization>()
                 .HasMany(org => org.AreBanned)
                 .WithMany(p => p.BannedFrom)
                 .UsingEntity(join => join.ToTable("BlackList"));
+
+            modelBuilder.Entity<Car>()
+                .HasIndex(c => c.LicenseNumber)
+                .IsUnique();
         }
 
         public DbSet<Person> People { get; set; } = null!;

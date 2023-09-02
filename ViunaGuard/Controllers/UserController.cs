@@ -93,7 +93,7 @@ namespace ViunaGuard.Controllers
         {
             var response = await _userService.GetPersonJobs();
             if (response.HttpResponseCode == 200)
-                return Ok(response.Data);
+                    return Ok(response.Data);
             else if (response.HttpResponseCode == 404)
                 return NotFound(response.Message);
             else
