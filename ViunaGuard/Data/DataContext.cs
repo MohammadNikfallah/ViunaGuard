@@ -56,12 +56,12 @@ namespace ViunaGuard.Data
         public DbSet<EntrancePolicie> EntrancePolicies { get; set; } = null!;
         public DbSet<OrganizationPolicy> OrganizationPolicies { get; set; } = null!;
         public DbSet<UserAccess> UserAccesses { get; set; } = null!;
-        public DbSet<Authority> Authorities { get; set; } = null!;
         public DbSet<EmployeePeriodicShift> EmployeePeriodicShifts { get; set; } = null!;
         public DbSet<SignatureNeedForEntrancePermission> SignatureNeedForEntrancePermissions { get; set; } = null!;
         public DbSet<SignedEntrancePermission> SignedEntrancePermissions { get; set; } = null!;
         public DbSet<AuthIdToViunaId> AuthIds { get; set; } = null!;
         public DbSet<EmployeeShiftPeriodicMonthly> EmployeeShiftsPeriodicMonthly { get; set; } = null!;
+        public DbSet<UserAccessRole> UserAccessRole { get; set; } = null!;
 
 
         public DbSet<CarBrand> CarBrands {  get; set; } = null!;

@@ -52,17 +52,17 @@ namespace ViunaGuard.Controllers
                 return BadRequest(response.Message);
         }
 
-        [HttpGet("GetOrganizationAuthorities")]
-        public async Task<ActionResult<List<Authority>>> GetOrganizationAuthorities(int organizationId)
-        {
-            var response = await _userService.GetOrganizationAuthorities(organizationId);
-            if (response.HttpResponseCode == 200)
-                return Ok(response.Data);
-            else if (response.HttpResponseCode == 404)
-                return NotFound(response.Message);
-            else
-                return BadRequest(response.Message);
-        }
+        // [HttpGet("GetOrganizationAuthorities")]
+        // public async Task<ActionResult<List<Authority>>> GetOrganizationAuthorities(int organizationId)
+        // {
+        //     var response = await _userService.GetOrganizationAuthorities(organizationId);
+        //     if (response.HttpResponseCode == 200)
+        //         return Ok(response.Data);
+        //     else if (response.HttpResponseCode == 404)
+        //         return NotFound(response.Message);
+        //     else
+        //         return BadRequest(response.Message);
+        // }
 
         [HttpGet("GetPersonDetails")]
         public async Task<ActionResult<PersonGetDto>> GetPersonDetails()

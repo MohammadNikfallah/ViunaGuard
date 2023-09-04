@@ -11,7 +11,6 @@ namespace ViunaGuard.Dtos
         public int OrganizationId { get; set; }
         public Organization? Organization { get; set; }
         [JsonIgnore]
-        public int MinAuthorityId { get; set; }
-        public Authority? MinAuthority { get; set; }
+        public int MinAuthorityLevel { get; set; }
     }
 }

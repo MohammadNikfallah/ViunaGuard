@@ -8,7 +8,7 @@
         public Task<ServiceResponse<List<EmployeeShift>>> PostShift(ShiftPostDto shift);
         public Task<ServiceResponse<TwoShiftGetDto>> GetPersonShifts(int employeeId);
         public Task<ServiceResponse<List<SignatureNeedGetDto>>> GetOrganizationSignatureNeed (int organizationId);
-        public Task<ServiceResponse<List<Authority>>> GetOrganizationAuthorities(int organizationId);
+        // public Task<ServiceResponse<List<Authority>>> GetOrganizationAuthorities(int organizationId);
         public Task<ServiceResponse<PersonGetDto>> GetPersonDetails();
         public Task<ServiceResponse<EmployeeShiftGetDto>> GetCurrentShift(int employeeId);
         public Task<ServiceResponse<List<EntrancePermissionGetDto>>> GetEntrancePermissions();

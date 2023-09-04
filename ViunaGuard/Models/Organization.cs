@@ -16,8 +16,6 @@ namespace ViunaGuard.Models
         [JsonIgnore]
         public List<Door> Doors { get; set; } = new List<Door>();
         [JsonIgnore]
-        public List<Authority> Authorities { get; set; } = new List<Authority>();
-        [JsonIgnore]
         public List<Person> AreBanned { get; set; } = new List<Person>();
     }
 }

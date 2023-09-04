@@ -90,7 +90,6 @@ namespace ViunaGuard.Services
 
             var data = await _context.SignatureNeedForEntrancePermissions
                 .Where(s => s.OrganizationId == organizationId)
-                .Include(s => s.MinAuthority)
                 .Select(s => _mapper.Map<SignatureNeedGetDto>(s))
                 .ToListAsync();
 
@@ -106,26 +105,26 @@ namespace ViunaGuard.Services
             return response;
         }
 
-        public async Task<ServiceResponse<List<Authority>>> GetOrganizationAuthorities(int organizationId)
-        {
-            var response = new ServiceResponse<List<Authority>>();
-
-            var data = await _context.Authorities
-                .Where(s => s.OrganizationId == organizationId)
-                .OrderBy(s => s.AuthorityLevel)
-                .ToListAsync();
-
-            if(data.Count == 0)
-            {
-                response.HttpResponseCode = 404;
-                response.Message = "no authority found related to this Organization";
-                return response;
-            }
-
-            response.Data = data;
-            response.HttpResponseCode = 200;
-            return response;
-        }
+        // public async Task<ServiceResponse<List<Authority>>> GetOrganizationAuthorities(int organizationId)
+        // {
+        //     var response = new ServiceResponse<List<Authority>>();
+        //
+        //     var data = await _context.Authorities
+        //         .Where(s => s.OrganizationId == organizationId)
+        //         .OrderBy(s => s.AuthorityLevel)
+        //         .ToListAsync();
+        //
+        //     if(data.Count == 0)
+        //     {
+        //         response.HttpResponseCode = 404;
+        //         response.Message = "no authority found related to this Organization";
+        //         return response;
+        //     }
+        //
+        //     response.Data = data;
+        //     response.HttpResponseCode = 200;
+        //     return response;
+        // }
 
         public async Task<ServiceResponse<PersonGetDto>> GetPersonDetails()
         {
@@ -322,7 +321,6 @@ namespace ViunaGuard.Services
             }
             
             var data = await _context.Employees
-                .Include(e => e.Authority)
                 .Include(e => e.EmployeeType)
                 .Include(e => e.Organization)
                 .Where(e => e.PersonId.ToString() == id)
