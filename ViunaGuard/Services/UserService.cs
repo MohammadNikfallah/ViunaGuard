@@ -105,27 +105,20 @@ namespace ViunaGuard.Services
             return response;
         }
 
-        // public async Task<ServiceResponse<List<Authority>>> GetOrganizationAuthorities(int organizationId)
-        // {
-        //     var response = new ServiceResponse<List<Authority>>();
-        //
-        //     var data = await _context.Authorities
-        //         .Where(s => s.OrganizationId == organizationId)
-        //         .OrderBy(s => s.AuthorityLevel)
-        //         .ToListAsync();
-        //
-        //     if(data.Count == 0)
-        //     {
-        //         response.HttpResponseCode = 404;
-        //         response.Message = "no authority found related to this Organization";
-        //         return response;
-        //     }
-        //
-        //     response.Data = data;
-        //     response.HttpResponseCode = 200;
-        //     return response;
-        // }
+        public async Task<ServiceResponse> PostEntrancePermission(EntrancePermissionPostDto entrancePermissionPostDto)
+        {
+            var response = new ServiceResponse<PersonGetDto>();
 
+            var entrancePermission = _mapper.Map<EntrancePermission>(entrancePermissionPostDto);
+            var userId = _httpContextAccessor.HttpContext!.User.FindFirstValue("ID");
+            entrancePermission.PersonId = int.Parse(userId!);
+            await _context.EntrancePermissions.AddAsync(entrancePermission);
+            await _context.SaveChangesAsync();
+
+            response.HttpResponseCode = 200;
+            return response;
+        }
+        
         public async Task<ServiceResponse<PersonGetDto>> GetPersonDetails()
         {
             var response = new ServiceResponse<PersonGetDto>();

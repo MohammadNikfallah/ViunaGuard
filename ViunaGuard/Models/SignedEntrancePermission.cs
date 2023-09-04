@@ -22,5 +22,7 @@ namespace ViunaGuard.Models
         public int EntrancePermissionId { get; set; }
         [JsonIgnore]
         public EntrancePermission EntrancePermission { get; set; }
+
+        public DateTime Time { get; set; }
     }
 }

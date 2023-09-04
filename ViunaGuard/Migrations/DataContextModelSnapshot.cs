@@ -806,6 +806,9 @@ namespace ViunaGuard.Migrations
                     b.Property<int>("SignedByEmployeeId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("Time")
+                        .HasColumnType("datetime2");
+
                     b.HasKey("Id");
 
                     b.HasIndex("EntrancePermissionId");
@@ -827,6 +830,9 @@ namespace ViunaGuard.Migrations
 
                     b.Property<bool>("AlwaysHaveEntrancePermission")
                         .HasColumnType("bit");
+
+                    b.Property<int>("AuthorityLevel")
+                        .HasColumnType("int");
 
                     b.Property<bool>("CanBringGuests")
                         .HasColumnType("bit");

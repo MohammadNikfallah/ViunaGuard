@@ -7,6 +7,7 @@ namespace ViunaGuard.Models
     {
         [Key]
         public int Id { get; set; }
+        public int AuthorityLevel { get; set; }
         public bool CanChangeShifts { get; set; }
         public bool CanBringGuests { get; set; }
         public bool CanInviteGuests { get; set; }

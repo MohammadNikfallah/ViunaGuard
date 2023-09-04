@@ -248,6 +248,51 @@ public class EmployeeService : IEmployeeService
         return response;
     }
 
+    public async Task<ServiceResponse<List<EntrancePermissionGetDto>>> GetPermissionsToSign(int employeeId)
+    {
+        var response = new ServiceResponse<List<EntrancePermissionGetDto>>();
+        var employee = await _context.Employees
+            .Include(e => e.UserAccessRole)
+            .ThenInclude(e => e.UserAccess)
+            .FirstOrDefaultAsync(e => e.Id == employeeId)!;
+        if (CheckEmployeeId(employee, response, out var serviceResponse))
+        {
+            response.Message = serviceResponse.Message;
+            response.HttpResponseCode = serviceResponse.HttpResponseCode;
+            return response;
+        }
+
+        var permissions = await 
+            _context.EntrancePermissions
+                .Include(e => e.Signatures)
+                .Include(e => e.Person)
+                .Include(e => e.Car)
+                .Where(e => e.OrganizationId == employee.OrganizationId && e.PermissionGranted == false)
+                .Select(e => _mapper.Map<EntrancePermissionGetDto>(e))
+                .ToListAsync();
+
+        var permissionNeeds = await _context.SignatureNeedForEntrancePermissions
+            .Where(s => s.OrganizationId == employee.OrganizationId)
+            .ToListAsync();
+        permissionNeeds.Sort((p,p1) 
+            => p.MinAuthorityLevel - p1.MinAuthorityLevel);
+
+        var result = new List<EntrancePermissionGetDto>();
+
+        foreach (var permission in permissions)
+        {
+            if (permissionNeeds[permission.Signatures.Count].MinAuthorityLevel <=
+                employee.UserAccessRole.UserAccess.AuthorityLevel)
+            {
+                result.Add(permission);
+            }
+        }
+        
+        response.HttpResponseCode = 200;
+        response.Data = result;
+        return response;
+    }
+
     public async Task<ServiceResponse> PostEmployee(EmployeePostDto employeePostDto, int employeeId)
     {
         var employee = _mapper.Map<Employee>(employeePostDto);
@@ -332,4 +377,79 @@ public class EmployeeService : IEmployeeService
         response.HttpResponseCode = 200;
         return response;
     }
+
+    public async Task<ServiceResponse> SignEntrancePermission(int entrancePermissionId, int employeeId)
+    {
+        var response = new ServiceResponse();
+        var employee = await _context.Employees
+            .Include(e => e.UserAccessRole)
+            .ThenInclude(e => e.UserAccess)
+            .FirstAsync(e => e.Id == employeeId);
+        if (CheckEmployeeId(employee, response, out var serviceResponse)) return serviceResponse;
+
+        var permission = await _context.EntrancePermissions
+            .Include(e => e.Signatures)
+            .FirstAsync(e => e.Id == entrancePermissionId);
+
+        if (permission.OrganizationId != employee.OrganizationId)
+        {
+            response.HttpResponseCode = 400;
+            response.Message = "you cant access this entrance permission";
+            return response;
+        }
+
+        var permissionNeeds = await _context.SignatureNeedForEntrancePermissions
+            .Where(s => s.OrganizationId == employee.OrganizationId)
+            .ToListAsync();
+        
+        if (permissionNeeds[permission.Signatures.Count].MinAuthorityLevel <=
+            employee.UserAccessRole.UserAccess.AuthorityLevel)
+        {
+            if (permission.Signatures.Count + 1 == permissionNeeds.Count)
+            {
+                permission.PermissionGranted = true;
+                _context.EntrancePermissions.Update(permission);
+            }
+            var sign = new EntranceSignaturePostDto()
+            {
+                OrganizationId = employee.OrganizationId,
+                AuthorityLevel = employee.UserAccessRole.UserAccess.AuthorityLevel,
+                Time = DateTime.Now,
+                EntrancePermissionId = permission.Id,
+                SignedByEmployeeId = employeeId
+            };
+            await _context.SignedEntrancePermissions.AddAsync(_mapper.Map<SignedEntrancePermission>(sign));
+            await _context.SaveChangesAsync();
+            response.HttpResponseCode = 200;
+            return response;
+        }
+
+        response.HttpResponseCode = 400;
+        response.Message = "you dont need to sign this entrance permission";
+        return response;
+    }
+
+    public async Task<ServiceResponse<List<EntrancePermissionGetDto>>> GetPermissions(int employeeId)
+    {
+        var response = new ServiceResponse<List<EntrancePermissionGetDto>>();
+        var employee = await _context.Employees.FindAsync(employeeId);
+        if (CheckEmployeeId(employee, response, out var serviceResponse))
+        {
+            response.Message = serviceResponse.Message;
+            response.HttpResponseCode = serviceResponse.HttpResponseCode;
+            return response;
+        }
+
+        var permissions = await 
+            _context.EntrancePermissions
+                .Include(e => e.Signatures)
+                .Include(e => e.Person)
+                .Include(e => e.Car)
+                .Where(e => e.OrganizationId == employee.OrganizationId)
+                .Select(e => _mapper.Map<EntrancePermissionGetDto>(e))
+                .ToListAsync();
+
+        response.HttpResponseCode = 200;
+        response.Data = permissions;
+        return response;    }
 }

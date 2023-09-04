@@ -52,18 +52,6 @@ namespace ViunaGuard.Controllers
                 return BadRequest(response.Message);
         }
 
-        // [HttpGet("GetOrganizationAuthorities")]
-        // public async Task<ActionResult<List<Authority>>> GetOrganizationAuthorities(int organizationId)
-        // {
-        //     var response = await _userService.GetOrganizationAuthorities(organizationId);
-        //     if (response.HttpResponseCode == 200)
-        //         return Ok(response.Data);
-        //     else if (response.HttpResponseCode == 404)
-        //         return NotFound(response.Message);
-        //     else
-        //         return BadRequest(response.Message);
-        // }
-
         [HttpGet("GetPersonDetails")]
         public async Task<ActionResult<PersonGetDto>> GetPersonDetails()
         {
@@ -94,6 +82,18 @@ namespace ViunaGuard.Controllers
             var response = await _userService.GetPersonJobs();
             if (response.HttpResponseCode == 200)
                     return Ok(response.Data);
+            else if (response.HttpResponseCode == 404)
+                return NotFound(response.Message);
+            else
+                return BadRequest(response.Message);
+        }
+
+        [HttpPost("PostEntrancePermission")]
+        public async Task<ActionResult> PostEntrancePermission(EntrancePermissionPostDto entrancePermissionPostDto)
+        {
+            var response = await _userService.PostEntrancePermission(entrancePermissionPostDto);
+            if (response.HttpResponseCode == 200)
+                    return Ok();
             else if (response.HttpResponseCode == 404)
                 return NotFound(response.Message);
             else

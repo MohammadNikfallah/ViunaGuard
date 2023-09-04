@@ -36,20 +36,7 @@ namespace ViunaGuard.Controllers
             else
                 return BadRequest(response.Message);
         }
-        
-        //
-        // [HttpPost("PostEntrance")]
-        // public async Task<ActionResult<Entrance>> PostEntrance(EntrancePostDto entrancePostDto)
-        // {
-        //     var response = await _guardService.PostEntrance(entrancePostDto);
-        //     if (response.HttpResponseCode == 200)
-        //         return Ok(response.Data);
-        //     else if (response.HttpResponseCode == 404)
-        //         return NotFound(response.Message);
-        //     else
-        //         return BadRequest(response.Message);
-        // }
-        
+
         [HttpGet("GetCar")]
         public async Task<ActionResult<Car>> GetCar(int carId, int employeeId)
         {
@@ -84,6 +71,12 @@ namespace ViunaGuard.Controllers
         
         [HttpGet("GetCars")]
         public async Task<ActionResult<List<Car>>> GetCars (string licenseNumber, int employeeId)
+        {
+            return await _context.Cars.Where(car => car.LicenseNumber == licenseNumber).ToListAsync();
+        }
+        
+        [HttpGet("CheckEntrancePermission")]
+        public async Task<ActionResult<List<Car>>> CheckEntrancePermission (string licenseNumber, int employeeId)
         {
             var response = new ServiceResponse<List<Car>>
             {

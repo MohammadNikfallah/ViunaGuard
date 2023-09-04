@@ -27,7 +27,7 @@ namespace ViunaGuard.Models
         [Required]
         public bool PermissionGranted { get; set; } = false;
         [JsonIgnore]
-        public List<SignedEntrancePermission> Signatures { get; set; } = new List<SignedEntrancePermission>();
+        public List<SignedEntrancePermission> Signatures { get; set; } = new();
 
     }
 }
