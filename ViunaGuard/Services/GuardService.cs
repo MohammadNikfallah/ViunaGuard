@@ -108,6 +108,7 @@ namespace ViunaGuard.Services
             }
 
             var person = await _context.People
+                .Include(p => p.Cars)
                 .Include(p => p.Jobs)
                 .ThenInclude(j => j.EmployeeType)
                 .Include(p => p.Jobs)

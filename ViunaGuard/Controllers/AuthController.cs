@@ -76,6 +76,7 @@ namespace ViunaGuard.Controllers
         }
 
         [HttpGet("RefreshToken")]
+        [Authorize("RefreshToken")]
         public async Task<ActionResult> RefreshToken()
         {
             var refreshToken = Request.Cookies.FirstOrDefault(x => x.Key == "VRT").Value;
@@ -96,6 +97,7 @@ namespace ViunaGuard.Controllers
             Response.Cookies.Append("VAT", accessToken, new CookieOptions
             {
                 HttpOnly = true,
+                Expires = DateTime.Now.AddHours(1),
                 SameSite = SameSiteMode.Strict,
                 Secure = true
             });

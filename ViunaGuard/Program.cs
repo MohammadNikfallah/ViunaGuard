@@ -96,6 +96,8 @@ builder.Services.AddAuthentication()
                 if (ctx.Token == null) {
                     if (ctx.Request.Cookies.ContainsKey("VAT"))
                         ctx.Token = ctx.Request.Cookies["VAT"];
+                    else if (ctx.Request.Cookies.ContainsKey("VRT"))
+                        ctx.Token = ctx.Request.Cookies["VRT"];
                 }
 
                 return Task.CompletedTask;
@@ -118,7 +120,8 @@ builder.Services.AddAuthentication()
                         new ClaimsIdentity(
                             new[]
                             {
-                                new Claim("ID", id.ViunaUserId.ToString())
+                                new Claim("ID", id.ViunaUserId.ToString()),
+                                new Claim("Type", ctx.Principal!.FindFirstValue("Type")!)
                             },
                             "Cookie"
                         ));
@@ -151,7 +154,13 @@ builder.Services.AddAuthentication()
             
             x.Response.Headers.Add("Refresh-token",x.RefreshToken);
             x.Response.Headers.Add("Access-token",x.AccessToken);
-            x.Response.Cookies.Append("VAT", x.AccessToken);
+            x.Response.Cookies.Append("VAT", x.AccessToken, new CookieOptions
+            {
+                Expires = DateTime.Now.AddHours(1),
+                HttpOnly = true,
+                SameSite = SameSiteMode.Strict,
+                Secure = true
+            });
             x.Response.Cookies.Append("VRT", x.RefreshToken!, new CookieOptions
             {
                 Path = "/Auth/RefreshToken",
@@ -192,7 +201,14 @@ builder.Services.AddAuthorization(o =>
     o.DefaultPolicy = new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
         .AddAuthenticationSchemes("JwtBearer")
+        .RequireClaim("Type", "AccessToken")
         .Build();
+    
+    o.AddPolicy("RefreshToken",new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .AddAuthenticationSchemes("JwtBearer")
+        .RequireClaim("Type", "RefreshToken")
+        .Build());
 });
 
 var app = builder.Build();
