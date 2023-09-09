@@ -65,9 +65,7 @@ namespace ViunaGuard.Controllers
             return BadRequest();
         }
         
-        /**
-         *logout the user
-         */
+        
         [HttpGet("Logout")]
         public ActionResult Logout()
         {
@@ -97,13 +95,14 @@ namespace ViunaGuard.Controllers
             }
             Response.Cookies.Append("VAT", accessToken, new CookieOptions
             {
-                Expires = DateTime.Now.AddMinutes(10),
                 HttpOnly = true,
                 SameSite = SameSiteMode.Strict,
                 Secure = true
             });
-            Response.Cookies.Append("VRT", tokens.RootElement.GetString("refresh_token")!, new CookieOptions
+            var newRefreshToken = tokens.RootElement.GetString("refresh_token");
+            Response.Cookies.Append("VRT", newRefreshToken!, new CookieOptions
             {
+                Path = "/Auth/RefreshToken",
                 Expires = DateTime.Now.AddDays(30),
                 HttpOnly = true,
                 SameSite = SameSiteMode.Strict,
@@ -112,13 +111,12 @@ namespace ViunaGuard.Controllers
             return Ok(new
             {
                 AccessToken = accessToken,
-                RefreshToken = tokens.RootElement.GetString("refresh_token")!
+                RefreshToken = newRefreshToken!
             });
         }
 
         [HttpGet("Test")]
         [Authorize]
-        [Authorize(Policy = "RoleCookie")]
         public ActionResult Test()
         {
             return Ok();

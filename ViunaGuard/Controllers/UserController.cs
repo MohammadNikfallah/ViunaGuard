@@ -99,6 +99,5 @@ namespace ViunaGuard.Controllers
             else
                 return BadRequest(response.Message);
         }
-
     }
 }

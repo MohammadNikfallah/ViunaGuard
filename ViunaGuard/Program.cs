@@ -12,17 +12,13 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using System.Security.Claims;
-using System.Text;
 using System.Text.Json;
-using Azure.Core;
-using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.HttpLogging;
 
 var builder = WebApplication.CreateBuilder(args);
 
 string responseString = "";
 string oauthBaseUrl = builder.Configuration.GetValue<string>("Constants:OauthBaseUrl")!;
-// string OAUTH_BASE_URL = "https://localhost:7120/";
 
 try
 {
@@ -141,35 +137,31 @@ builder.Services.AddAuthentication()
         o.CallbackPath = "/Auth/custom_cb";
         o.Events.OnTicketReceived = x =>
         {
-            x.ReturnUri = "https://localhost:7063/test";
+            x.ReturnUri = "http://192.168.0.112:7123/";
             return Task.CompletedTask;
         };
 
         o.UsePkce = true;
-        o.Events.OnCreatingTicket = async x =>
+        o.Events.OnCreatingTicket = x =>
         {
             var payloadBase64 = x.AccessToken!.Split(".")[1];
             var payloadJson = Base64UrlTextEncoder.Decode(payloadBase64);
             var payload = JsonDocument.Parse(payloadJson);
             x.RunClaimActions(payload.RootElement);
-
-            var tokens = new Tokens
-            {
-                RefreshToken = x.RefreshToken,
-                AccessToken = x.AccessToken
-            };
-
-            var responsePayload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(tokens));
             
             x.Response.Headers.Add("Refresh-token",x.RefreshToken);
             x.Response.Headers.Add("Access-token",x.AccessToken);
-            // await x.Response.Body.WriteAsync(responsePayload);
-            // x.Response.StatusCode = 200;
-            // x.Response.Body.Write(responsePayload);
             x.Response.Cookies.Append("VAT", x.AccessToken);
-            x.Response.Cookies.Append("VRT", x.RefreshToken!);
+            x.Response.Cookies.Append("VRT", x.RefreshToken!, new CookieOptions
+            {
+                Path = "/Auth/RefreshToken",
+                Expires = DateTime.Now.AddDays(30),
+                HttpOnly = true,
+                SameSite = SameSiteMode.Strict,
+                Secure = true
+            });
             x.Response.Cookies.Delete("ClientCookie");
-
+            return Task.CompletedTask;
         };
     });
 
@@ -220,9 +212,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
-internal class Tokens
-{
-    public string RefreshToken { get; set; }
-    public string AccessToken { get; set; }
-}

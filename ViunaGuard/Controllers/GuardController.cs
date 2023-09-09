@@ -76,13 +76,16 @@ namespace ViunaGuard.Controllers
         }
         
         [HttpGet("CheckEntrancePermission")]
-        public async Task<ActionResult<List<Car>>> CheckEntrancePermission (string licenseNumber, int employeeId)
+        public async Task<ActionResult<EntrancePermissionCheckDto>> CheckEntrancePermission(string nationalId, int employeeId)
         {
-            var response = new ServiceResponse<List<Car>>
-            {
-                Data = await _context.Cars.Where(car => car.LicenseNumber == licenseNumber).ToListAsync()
-            };
-            return response.Data;
+            var response = await _guardService.CheckEntrancePermission(nationalId, employeeId);
+            if (response.HttpResponseCode == 200)
+                return Ok(response.Data);
+            else if (response.HttpResponseCode == 404)
+                return NotFound(response.Message);
+            else
+                return BadRequest(response.Message);
         }
+
     }
 }

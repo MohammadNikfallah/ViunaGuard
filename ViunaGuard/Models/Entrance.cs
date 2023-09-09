@@ -23,5 +23,6 @@ namespace ViunaGuard.Models
         [JsonIgnore]
         public EntranceGroup? EntranceGroup { get; set; }
         public bool IsDriver { get; set; } = false;
+        public bool Permitted { get; set; }
     }
 }

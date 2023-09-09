@@ -2,10 +2,11 @@
 {
     public interface IGuardService
     {
-        public Task<ServiceResponse<object>> PostEntrances
+        public Task<ServiceResponse> PostEntrances
             (EntranceGroupPostDto entranceGroupPost, int employeeId);
 
         public Task<ServiceResponse<List<EntranceGroupGetDto>>> GetEntrances(DateOnly startDate, DateOnly endDate,
             int doorId, int guardId, int enterOrExitId, int employeeId);
+        public Task<ServiceResponse<EntrancePermissionCheckDto>> CheckEntrancePermission(string nationalId, int emplyeeId);
     }
 }

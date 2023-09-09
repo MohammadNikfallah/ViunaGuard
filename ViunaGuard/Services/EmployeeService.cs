@@ -267,7 +267,7 @@ public class EmployeeService : IEmployeeService
                 .Include(e => e.Signatures)
                 .Include(e => e.Person)
                 .Include(e => e.Car)
-                .Where(e => e.OrganizationId == employee.OrganizationId && e.PermissionGranted == false)
+                .Where(e => e.OrganizationId == employee.OrganizationId && e.PermissionGranted == false && e.EndValidityTime > DateTime.Now)
                 .Select(e => _mapper.Map<EntrancePermissionGetDto>(e))
                 .ToListAsync();
 
@@ -397,6 +397,13 @@ public class EmployeeService : IEmployeeService
             response.Message = "you cant access this entrance permission";
             return response;
         }
+        
+        if (permission.EndValidityTime < DateTime.Now)
+        {
+            response.HttpResponseCode = 400;
+            response.Message = "this Entrance permission has been expired";
+            return response;
+        }
 
         var permissionNeeds = await _context.SignatureNeedForEntrancePermissions
             .Where(s => s.OrganizationId == employee.OrganizationId)
@@ -445,7 +452,7 @@ public class EmployeeService : IEmployeeService
                 .Include(e => e.Signatures)
                 .Include(e => e.Person)
                 .Include(e => e.Car)
-                .Where(e => e.OrganizationId == employee.OrganizationId)
+                .Where(e => e.OrganizationId == employee.OrganizationId && e.EndValidityTime > DateTime.Now)
                 .Select(e => _mapper.Map<EntrancePermissionGetDto>(e))
                 .ToListAsync();
 
