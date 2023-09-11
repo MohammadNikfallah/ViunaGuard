@@ -9,8 +9,8 @@ namespace ViunaGuard.Dtos
     public class EntranceGetDto
     {
         public int Id { get; set; }
-        [JsonIgnore]
-        public int PersonId { get; set; }
+        [JsonIgnore] 
+        public string PersonId { get; set; } = null!;
         public PersonForEntranceGetDto? Person { get; set; }
         [JsonIgnore]
         public int? CarId { get; set; }

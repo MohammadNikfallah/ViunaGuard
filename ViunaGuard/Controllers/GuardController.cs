@@ -69,11 +69,17 @@ namespace ViunaGuard.Controllers
                 return BadRequest(response.Message);
         }
         
-        [HttpGet("GetCars")]
-        public async Task<ActionResult<List<Car>>> GetCars (string licenseNumber, int employeeId)
-        {
-            return await _context.Cars.Where(car => car.LicenseNumber == licenseNumber).ToListAsync();
-        }
+        // [HttpGet("GetCar")]
+        // public async Task<ActionResult<Car>> GetCar (string licenseNumber, int employeeId)
+        // {
+        //     var response = await _guardService.GetCar(entranceGroupPost, employeeId);
+        //     if (response.HttpResponseCode == 200)
+        //         return Ok();
+        //     else if (response.HttpResponseCode == 404)
+        //         return NotFound(response.Message);
+        //     else
+        //         return BadRequest(response.Message);
+        // }
         
         [HttpGet("CheckEntrancePermission")]
         public async Task<ActionResult<EntrancePermissionCheckDto>> CheckEntrancePermission(string nationalId, int employeeId)

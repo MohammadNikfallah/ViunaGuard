@@ -8,7 +8,6 @@ namespace ViunaGuard.Controllers
     [Route("[controller]")]
     [ApiController]
     [Authorize]
-    [Authorize("RoleCookie")]
     public class TestController : ControllerBase
     {
         private readonly DataContext _context;
@@ -39,8 +38,21 @@ namespace ViunaGuard.Controllers
             return Ok(people);
         }
 
+
+        [HttpPost("PostPerson")]
+        public async Task<ActionResult> PostPerson(Person person)
+        {
+            var ai = new PersonAdditionalInfo();
+            var aic = await _context.PersonAdditionalInfos.AddAsync(ai);
+            await _context.SaveChangesAsync();
+            person.PersonAdditionalInfoId = aic.Entity.Id;
+            await _context.People.AddAsync(person);
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
         [HttpGet("GetPerson")]
-        public async Task<ActionResult<Person>> GetPerson(int id)
+        public async Task<ActionResult<Person>> GetPerson(string id)
         {
             var people = await _context.People.FirstOrDefaultAsync(p => p.Id == id);
             return Ok(people);

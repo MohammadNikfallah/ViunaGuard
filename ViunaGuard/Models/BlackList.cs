@@ -13,8 +13,8 @@ namespace ViunaGuard.Models
         public int OrganizationId { get; set; }
         [JsonIgnore]
         public Organization Organization { get; set; } = null!;
-        [Required, ForeignKey("Person")]
-        public int PersonId { get; set; }
+        [Required, ForeignKey("Person")] 
+        public string PersonId { get; set; } = null!;
         [JsonIgnore]
         public Person Person { get; set; } = null!;
     }

@@ -2,7 +2,7 @@
 {
     public interface IUserService
     {
-        public Task<ServiceResponse<Person>> PostCar(Car car, int id);
+        public Task<ServiceResponse<Person>> PostCar(Car car, string id);
         public Task<ServiceResponse<List<Person>>> PostPerson(PersonPostDto personDto);
         public Task<ServiceResponse<object>> PostPeriodicShift(PeriodicShiftPostDto shift);
         public Task<ServiceResponse<List<EmployeeShift>>> PostShift(ShiftPostDto shift);

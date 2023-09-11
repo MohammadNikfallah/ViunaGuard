@@ -27,7 +27,7 @@ namespace ViunaGuard.Controllers
             return Results.Challenge(
                 new AuthenticationProperties()
                 {
-                    RedirectUri = "https://localhost:7063/"
+                    RedirectUri = "https://localhost:7063/test"
                 },
                 authenticationSchemes: new List<string>() { "OAuth" });
         }
@@ -59,7 +59,10 @@ namespace ViunaGuard.Controllers
                 var cookieString = cookie.Split('=')[1].Split(';')[0];
                 
                 Response.Cookies.Append(cookieName, cookieString);
-                return Ok();
+                return Ok(new
+                {
+                    Success = true
+                });
             }
 
             return BadRequest();

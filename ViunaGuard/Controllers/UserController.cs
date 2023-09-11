@@ -16,7 +16,7 @@ namespace ViunaGuard.Controllers
         }
 
         [HttpPost("postCar")]
-        public async Task<ActionResult<Person>> PostCar(Car car, int personId)
+        public async Task<ActionResult<Person>> PostCar(Car car, string personId)
         {
             var response = await _userService.PostCar(car, personId);
             if (response.HttpResponseCode == 200)

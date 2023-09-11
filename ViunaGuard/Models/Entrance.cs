@@ -10,7 +10,7 @@ namespace ViunaGuard.Models
         [Key, Required]
         public int Id { get; set; }
         [Required, ForeignKey("Person")]
-        public int PersonId { get; set; }
+        public string PersonId { get; set; } = null!;
         [JsonIgnore]
         public Person? Person { get; set; }
         [ForeignKey("Car")]

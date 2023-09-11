@@ -11,8 +11,4 @@ public class EmployeeGetDto
     public Organization Organization { get; set; } = null!;
     public EmployeeType? EmployeeType { get; set; }
     public string? PersonnelID { get; set; } = string.Empty;
-    // [ForeignKey("Authority")]
-    // public int AuthorityLevelId { get; set; }
-    // [JsonIgnore]
-    // public Authority Authority { get; set; } = null!;
 }

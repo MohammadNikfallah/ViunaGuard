@@ -2,7 +2,7 @@
 
 public class PersonForEntranceGetDto
 {
-    public int Id { get; set; }
+    public string Id { get; set; } = null!;
     public PersonAdditionalInfo? PersonAdditionalInfo { get; set; }
     public string NationalId { get; set; } = null!;
     public string LastName { get; set; } = null!;

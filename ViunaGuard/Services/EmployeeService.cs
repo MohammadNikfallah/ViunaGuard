@@ -48,7 +48,7 @@ public class EmployeeService : IEmployeeService
         }
 
         var userId = _httpContextAccessor.HttpContext!.User.FindFirstValue("ID");
-        if (employee.PersonId != int.Parse(userId!))
+        if (employee.PersonId != userId!)
         {
             response.HttpResponseCode = 400;
             response.Message = "You cant access this employee";

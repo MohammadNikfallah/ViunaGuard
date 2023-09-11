@@ -59,7 +59,6 @@ namespace ViunaGuard.Data
         public DbSet<EmployeePeriodicShift> EmployeePeriodicShifts { get; set; } = null!;
         public DbSet<SignatureNeedForEntrancePermission> SignatureNeedForEntrancePermissions { get; set; } = null!;
         public DbSet<SignedEntrancePermission> SignedEntrancePermissions { get; set; } = null!;
-        public DbSet<AuthIdToViunaId> AuthIds { get; set; } = null!;
         public DbSet<EmployeeShiftPeriodicMonthly> EmployeeShiftsPeriodicMonthly { get; set; } = null!;
         public DbSet<UserAccessRole> UserAccessRole { get; set; } = null!;
 

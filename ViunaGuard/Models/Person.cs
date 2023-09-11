@@ -6,8 +6,7 @@ namespace ViunaGuard.Models
 {
     public class Person
     {
-        [Key]
-        public int Id { get; set; }
+        [Key] public string Id { get; set; } = null!;
         [Required, ForeignKey("PersonAdditionalInfo")]
         public int PersonAdditionalInfoId { get; set; }
         [JsonIgnore]

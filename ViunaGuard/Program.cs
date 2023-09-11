@@ -12,8 +12,11 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using System.Security.Claims;
+using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.HttpLogging;
+using NuGet.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -103,30 +106,30 @@ builder.Services.AddAuthentication()
                 return Task.CompletedTask;
             },
 
-            OnTokenValidated = async ctx =>
-            {
-                var sp = builder.Services.BuildServiceProvider();
-                var dbContext = sp.GetService<DataContext>();
-                var id = await dbContext!.AuthIds
-                    .FirstOrDefaultAsync(a => a.AuthId.ToString() == ctx.Principal!.FindFirstValue("ID"));
-
-                if (id == null)
-                {
-                    ctx.Fail("you need to register in ViunaGuard");
-                }
-                else
-                {
-                    ctx.Principal = new ClaimsPrincipal(
-                        new ClaimsIdentity(
-                            new[]
-                            {
-                                new Claim("ID", id.ViunaUserId.ToString()),
-                                new Claim("Type", ctx.Principal!.FindFirstValue("Type")!)
-                            },
-                            "Cookie"
-                        ));
-                }
-            }
+            // OnTokenValidated = async ctx =>
+            // {
+            //     var sp = builder.Services.BuildServiceProvider();
+            //     var dbContext = sp.GetService<DataContext>();
+            //     var id = await dbContext!.AuthIds
+            //         .FirstOrDefaultAsync(a => a.AuthId.ToString() == ctx.Principal!.FindFirstValue("ID"));
+            //
+            //     if (id == null)
+            //     {
+            //         ctx.Fail("you need to register in ViunaGuard");
+            //     }
+            //     else
+            //     {
+            //         ctx.Principal = new ClaimsPrincipal(
+            //             new ClaimsIdentity(
+            //                 new[]
+            //                 {
+            //                     new Claim("ID", id.ViunaUserId.ToString()),
+            //                     new Claim("Type", ctx.Principal!.FindFirstValue("Type")!)
+            //                 },
+            //                 "Cookie"
+            //             ));
+            //     }
+            // }
         };
     })
     .AddOAuth("OAuth", o =>
@@ -134,26 +137,67 @@ builder.Services.AddAuthentication()
         o.SignInScheme = "Cookie";
         o.ClientId = "12345";
         o.ClientSecret = "secretTest";
+        o.SaveTokens = true;
 
         o.AuthorizationEndpoint = $"{oauthBaseUrl}api/OAuth/authorize";
         o.TokenEndpoint = $"{oauthBaseUrl}api/OAuth/token";
         o.CallbackPath = "/Auth/custom_cb";
-        o.Events.OnTicketReceived = x =>
+        o.Events.OnTicketReceived = async x =>
         {
-            x.ReturnUri = "http://192.168.0.112:7123/";
-            return Task.CompletedTask;
+            // x.ReturnUri = "http://192.168.0.112:7123/";
+            var tokens = x.Properties.GetTokens();
+            var access = tokens.First(t => t.Name == "access_token").Value;
+            var refresh = tokens.First(t => t.Name == "access_token").Value;
+            x.Response.Headers.Add("Access-Token", access);
+            x.Response.Headers.Add("Refresh-Token", refresh);
+
+            using MemoryStream stream = new MemoryStream();
+            var jsonObject = new Tokens()
+            {
+                AccessToken = access,
+                RefreshToken = refresh
+            };
+            await JsonSerializer.SerializeAsync(stream, jsonObject, typeof(Tokens));
+            var readOnlyMemory = new ReadOnlyMemory<byte>(stream.ToArray());
+            
+            x.Response.StatusCode = 200;
+            
+            x.Response.ContentType = "application/json; charset=utf-8";
+            x.Response.ContentLength = stream.ToArray().Length;
+            
+            await x.Response.Body.WriteAsync(readOnlyMemory);
+            await x.Response.Body.FlushAsync();
+            
         };
 
         o.UsePkce = true;
-        o.Events.OnCreatingTicket = x =>
+        o.Events.OnCreatingTicket = async x =>
         {
             var payloadBase64 = x.AccessToken!.Split(".")[1];
             var payloadJson = Base64UrlTextEncoder.Decode(payloadBase64);
             var payload = JsonDocument.Parse(payloadJson);
             x.RunClaimActions(payload.RootElement);
             
-            x.Response.Headers.Add("Refresh-token",x.RefreshToken);
-            x.Response.Headers.Add("Access-token",x.AccessToken);
+            // x.Response.Headers.Add("Refresh-token",x.RefreshToken);
+            // x.Response.Headers.Add("Access-token",x.AccessToken);
+            
+            // Serialize using the settings provided
+            // using MemoryStream stream = new MemoryStream();
+            // var jsonObject = new Tokens()
+            // {
+            //     AccessToken = x.AccessToken,
+            //     RefreshToken = x.RefreshToken
+            // };
+            // await JsonSerializer.SerializeAsync(stream, jsonObject, typeof(Tokens));
+            // ReadOnlyMemory<byte> readOnlyMemory = new ReadOnlyMemory<byte>(stream.ToArray());
+            //
+            // x.Response.StatusCode = 200;
+            //
+            // x.Response.ContentType = "application/json; charset=utf-8";
+            //
+            // await x.Response.Body.WriteAsync(readOnlyMemory);
+            // await x.Response.Body.FlushAsync();
+            
             x.Response.Cookies.Append("VAT", x.AccessToken, new CookieOptions
             {
                 Expires = DateTime.Now.AddHours(1),
@@ -169,8 +213,6 @@ builder.Services.AddAuthentication()
                 SameSite = SameSiteMode.Strict,
                 Secure = true
             });
-            x.Response.Cookies.Delete("ClientCookie");
-            return Task.CompletedTask;
         };
     });
 
@@ -227,4 +269,16 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.MapGet("/test", () =>
+{
+    
+    return Task.CompletedTask;
+});
+
 app.Run();
+
+class Tokens
+{
+    public string AccessToken { get; set; }
+    public string RefreshToken { get; set; }
+}

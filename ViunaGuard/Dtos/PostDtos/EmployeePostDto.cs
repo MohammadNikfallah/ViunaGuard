@@ -13,8 +13,8 @@ public class EmployeePostDto
     public int Id { get; set; }
     [Required]
     public int OrganizationId { get; set; }
-    [Required]
-    public int PersonId { get; set; }
+    [Required] 
+    public string PersonId { get; set; } = null!;
     [Required]
     public int EmployeeTypeId{ get; set; }
     public string? PersonnelID { get; set; } = string.Empty;

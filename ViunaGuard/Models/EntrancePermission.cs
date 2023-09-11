@@ -14,7 +14,7 @@ namespace ViunaGuard.Models
         [JsonIgnore]
         public Organization Organization { get; set; } = null!;
         [Required, ForeignKey("Person")]
-        public int PersonId { get; set; }
+        public string PersonId { get; set; } = null!;
         public Person Person { get; set; } = null!;
         [Required]
         public DateTime StartValidityTime{ get; set; }

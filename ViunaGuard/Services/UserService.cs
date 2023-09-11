@@ -17,7 +17,7 @@ namespace ViunaGuard.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<ServiceResponse<Person>> PostCar(Car car, int id)
+        public async Task<ServiceResponse<Person>> PostCar(Car car, string id)
         {
             var response = new ServiceResponse<Person>();
 
@@ -111,7 +111,7 @@ namespace ViunaGuard.Services
 
             var entrancePermission = _mapper.Map<EntrancePermission>(entrancePermissionPostDto);
             var userId = _httpContextAccessor.HttpContext!.User.FindFirstValue("ID");
-            entrancePermission.PersonId = int.Parse(userId!);
+            entrancePermission.PersonId = userId!;
             await _context.EntrancePermissions.AddAsync(entrancePermission);
             await _context.SaveChangesAsync();
 
@@ -141,7 +141,7 @@ namespace ViunaGuard.Services
                 .Include(p => p.BirthPlaceCity)
                 .Include(p => p.MilitaryServiceStatus)
                 .FirstOrDefaultAsync
-                (p => p.Id.ToString() == id);
+                (p => p.Id == id);
 
             if(data == null)
             {
@@ -272,7 +272,7 @@ namespace ViunaGuard.Services
             var data = await _context.People
                 .Include(p => p.EntrancePermissions)
                 .FirstOrDefaultAsync
-                (p => p.Id.ToString() == id);
+                (p => p.Id == id);
 
             if (data == null)
             {
@@ -304,7 +304,7 @@ namespace ViunaGuard.Services
 
             var person = await _context.People
                 .FirstOrDefaultAsync
-                    (p => p.Id.ToString() == id);
+                    (p => p.Id == id);
 
             if(person == null)
             {
@@ -316,7 +316,7 @@ namespace ViunaGuard.Services
             var data = await _context.Employees
                 .Include(e => e.EmployeeType)
                 .Include(e => e.Organization)
-                .Where(e => e.PersonId.ToString() == id)
+                .Where(e => e.PersonId == id)
                 .Select(e => _mapper.Map<EmployeeGetDto>(e))
                 .ToListAsync();
 

@@ -8,6 +8,8 @@ namespace ViunaGuard.Dtos
     public class PersonPostDto
     {
         [Required]
+        public string Id { get; set; } = null;
+        [Required]
         public string NationalId { get; set; } = null!;
         [Required]
         public string LastName { get; set; } = null!;
