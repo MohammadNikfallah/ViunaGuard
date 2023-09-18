@@ -63,7 +63,10 @@ namespace ViunaGuard.Services
             , int guardId, int enterOrExitId, int employeeId)
         {
             var response = new ServiceResponse<List<EntranceGroupGetDto>>();
-            var employee = await _context.Employees.FindAsync(employeeId);
+            var employee = await _context.Employees
+                .Include(e => e.UserAccessRole)
+                .ThenInclude(e => e.UserAccess)
+                .FirstOrDefaultAsync(e => e.Id == employeeId);
             if (CheckGuardId(employee, response, out var serviceResponse))
             {
                 response.HttpResponseCode = serviceResponse.HttpResponseCode;
@@ -79,12 +82,16 @@ namespace ViunaGuard.Services
             if (startDate != DateOnly.MinValue && endDate != DateOnly.MinValue)
                 entranceGroup = entranceGroup.Where(e => e.Time >= startDate.ToDateTime(TimeOnly.MinValue) 
                     && e.Time < endDate.ToDateTime(TimeOnly.MaxValue));
+            if (!employee!.UserAccessRole.UserAccess.CanSeeOtherDoorsEntrances)
+                entranceGroup = entranceGroup.Where(e => e.GuardId == employeeId);
             if (doorId > 0)
                 entranceGroup = entranceGroup.Where(e => e.DoorId == doorId);
-            if (guardId > 0)
-                entranceGroup = entranceGroup.Where(e => e.GuardId == guardId);
             if (enterOrExitId > 0)
                 entranceGroup = entranceGroup.Where(e => e.EnterOrExitId == enterOrExitId);
+            if (!employee!.UserAccessRole.UserAccess.CanSeeOtherGuardsEntrances)
+                entranceGroup = entranceGroup.Where(e => e.GuardId == employeeId);
+            else if (guardId > 0)
+                entranceGroup = entranceGroup.Where(e => e.GuardId == guardId);
 
             response.Data = await entranceGroup
                 .Select(e => _mapper.Map<EntranceGroupGetDto>(e)).ToListAsync();
@@ -116,6 +123,7 @@ namespace ViunaGuard.Services
                 .ThenInclude(u => u.UserAccess)
                 .Include(p => p.EntrancePermissions)
                 .ThenInclude(e => e.Signatures)
+                .Include(e => e.BannedFrom)
                 .FirstOrDefaultAsync(p => p.NationalId == nationalId);
             if (person == null)
             {
@@ -158,7 +166,96 @@ namespace ViunaGuard.Services
                         if (ep.StartValidityTime < DateTime.Now)
                             response.Data.DoesHavePermission = true;
                 }
+            
+            if (person.BannedFrom.Exists(o => o.Id == employee.OrganizationId))
+            {
+                response.Data.IsInBlackList = true;
+                response.Data.DoesHavePermission = false;
+            }
             response.HttpResponseCode = 200;
+            return response;
+        }
+
+        public async Task<ServiceResponse<CheckExitPermissionDto>> CheckExitPermission(string nationalId, int employeeId)
+        {
+            var response = new ServiceResponse<CheckExitPermissionDto>()
+            {
+                Data = new CheckExitPermissionDto()
+            };
+            var employee = await _context.Employees.FindAsync(employeeId);
+            if (CheckGuardId(employee, response, out var serviceResponse))
+            {
+                response.HttpResponseCode = serviceResponse.HttpResponseCode;
+                response.Message = serviceResponse.Message;
+                return response;
+            }
+            
+            var person = await _context.People
+                .Include(p => p.Cars)
+                .Include(p => p.Jobs)
+                .ThenInclude(j => j.EmployeeType)
+                .Include(p => p.Jobs)
+                .ThenInclude(j => j.UserAccessRole)
+                .ThenInclude(u => u.UserAccess)
+                .Include(p => p.EntrancePermissions)
+                .ThenInclude(e => e.Signatures)
+                .Include(e => e.BannedFrom)
+                .FirstOrDefaultAsync(p => p.NationalId == nationalId);
+            if (person == null)
+            {
+                response.HttpResponseCode = 404;
+                response.Message = "Person Not Found";
+                return response;
+            }
+            var job = person.Jobs
+                .FirstOrDefault(j => j.OrganizationId == employee!.OrganizationId);
+            response.Data!.Job = _mapper.Map<EmployeeGetDto>(job);
+            person.Jobs = new();
+            response.Data.Person = _mapper.Map<PersonGetDto>(person);
+            response.Data.EntrancePermissions =
+                person.EntrancePermissions
+                    .Where(e => e.OrganizationId == employee!.OrganizationId)
+                    .Select(e => _mapper.Map<EntrancePermissionGetDto>(e))
+                    .OrderByDescending(e => e.StartValidityTime)
+                    .Take(5).ToList();
+            if (response.Data.Job != null)
+            {
+                response.Data.DoesHavePermission = true;
+            }
+            
+            foreach (var ep in response.Data.EntrancePermissions)
+            {
+                if(ep.EndValidityTime > DateTime.Now)
+                    if (ep.StartValidityTime < DateTime.Now)
+                        if(ep.DidVisitOrgPlace)
+                            response.Data.DoesHavePermission = true;
+            }
+
+            response.HttpResponseCode = 200;
+            return response;
+        }
+
+        public async Task<ServiceResponse> PostPerson(PersonPostDto personDto, int employeeId)
+        {
+            var response = new ServiceResponse();
+            var employee = await _context.Employees.FindAsync(employeeId);
+            if (CheckGuardId(employee, response, out var serviceResponse)) return serviceResponse;
+            
+            var person = _mapper.Map<Person>(personDto);
+            var personTest = _context.People.FirstOrDefault(p => p.NationalId == person.NationalId);
+            if (personTest != null)
+            {
+                response.HttpResponseCode = 400;
+                response.Message = "Person With this nationalId Exists";
+                return response;
+            }
+            var personAdditionalInfo = new PersonAdditionalInfo();
+            person.PersonAdditionalInfo = personAdditionalInfo;
+            await _context.PersonAdditionalInfos.AddAsync(personAdditionalInfo);
+            await _context.People.AddAsync(person);
+            await _context.SaveChangesAsync();
+
+            response.HttpResponseCode=200;
             return response;
         }
 
@@ -166,20 +263,14 @@ namespace ViunaGuard.Services
         public async Task<ServiceResponse> PostEntrances
             (EntranceGroupPostDto entranceGroupPost, int employeeId)
         {
-
-            var response = new ServiceResponse<object>();
-            var guardEmployee = await _context.Employees.FindAsync(employeeId);
-            if (CheckGuardId(guardEmployee, response, out var serviceResponse))
-            {
-                response.HttpResponseCode = serviceResponse.HttpResponseCode;
-                response.Message = serviceResponse.Message;
-                return response;
-            }
+            var response = new ServiceResponse();
+            var employee = await _context.Employees.FindAsync(employeeId);
+            if (CheckGuardId(employee, response, out var serviceResponse)) return serviceResponse;
 
             var entranceGroup = _mapper.Map<EntranceGroup>(entranceGroupPost);
 
             entranceGroup.GuardId = employeeId;
-            entranceGroup.OrganizationId = guardEmployee!.OrganizationId;
+            entranceGroup.OrganizationId = employee!.OrganizationId;
 
             await _context.EntranceGroups.AddAsync(entranceGroup);
             await _context.SaveChangesAsync();

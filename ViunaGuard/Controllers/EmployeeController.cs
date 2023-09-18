@@ -21,10 +21,9 @@ namespace ViunaGuard.Controllers
             var response = await _employeeService.PostPeriodicShift(shift, employeeId);
             if (response.HttpResponseCode == 200)
                 return Ok();
-            else if (response.HttpResponseCode == 404)
+            if (response.HttpResponseCode == 404)
                 return NotFound(response.Message);
-            else
-                return BadRequest(response.Message);
+            return BadRequest(response.Message);
         }
 
         [HttpGet("GetPermissionsToSign")]
@@ -33,10 +32,9 @@ namespace ViunaGuard.Controllers
             var response = await _employeeService.GetPermissionsToSign(employeeId);
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
-            else if (response.HttpResponseCode == 404)
+            if (response.HttpResponseCode == 404)
                 return NotFound(response.Message);
-            else
-                return BadRequest(response.Message);
+            return BadRequest(response.Message);
         }
 
         [HttpGet("GetAllPermissions")]
@@ -45,10 +43,9 @@ namespace ViunaGuard.Controllers
             var response = await _employeeService.GetPermissions(employeeId);
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
-            else if (response.HttpResponseCode == 404)
+            if (response.HttpResponseCode == 404)
                 return NotFound(response.Message);
-            else
-                return BadRequest(response.Message);
+            return BadRequest(response.Message);
         }
         
         [HttpPost("PostShift")]
@@ -57,10 +54,9 @@ namespace ViunaGuard.Controllers
             var response = await _employeeService.PostShift(shift, employeeId);
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
-            else if (response.HttpResponseCode == 404)
+            if (response.HttpResponseCode == 404)
                 return NotFound(response.Message);
-            else
-                return BadRequest(response.Message);
+            return BadRequest(response.Message);
         }
 
         [HttpGet("GetCurrentShift")]
@@ -69,10 +65,9 @@ namespace ViunaGuard.Controllers
             var response = await _employeeService.GetCurrentShift(employeeId);
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
-            else if (response.HttpResponseCode == 404)
+            if (response.HttpResponseCode == 404)
                 return NotFound(response.Message);
-            else
-                return BadRequest(response.Message);
+            return BadRequest(response.Message);
         }
 
         [HttpGet("GetEmployeeShifts")]
@@ -81,10 +76,9 @@ namespace ViunaGuard.Controllers
             var response = await _employeeService.GetEmployeeShifts(employeeId);
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
-            else if (response.HttpResponseCode == 404)
+            if (response.HttpResponseCode == 404)
                 return NotFound(response.Message);
-            else
-                return BadRequest(response.Message);
+            return BadRequest(response.Message);
         }
 
         [HttpPost("PostEmployeeWeeklyShift")]
@@ -93,10 +87,9 @@ namespace ViunaGuard.Controllers
             var response = await _employeeService.PostEmployeeWeeklyShift(weeklyShiftPostDto, employeeId);
             if (response.HttpResponseCode == 200)
                 return Ok();
-            else if (response.HttpResponseCode == 404)
+            if (response.HttpResponseCode == 404)
                 return NotFound(response.Message);
-            else
-                return BadRequest(response.Message);
+            return BadRequest(response.Message);
         }
         
         [HttpPost("PostEmployeeMonthlyShift")]
@@ -105,10 +98,9 @@ namespace ViunaGuard.Controllers
             var response = await _employeeService.PostEmployeeMonthlyShift(monthlyShiftPostDto, employeeId);
             if (response.HttpResponseCode == 200)
                 return Ok();
-            else if (response.HttpResponseCode == 404)
+            if (response.HttpResponseCode == 404)
                 return NotFound(response.Message);
-            else
-                return BadRequest(response.Message);
+            return BadRequest(response.Message);
         }
         
         [HttpPost("SignEntrancePermission")]
@@ -117,10 +109,42 @@ namespace ViunaGuard.Controllers
             var response = await _employeeService.SignEntrancePermission(entrancePermissionId, employeeId);
             if (response.HttpResponseCode == 200)
                 return Ok();
-            else if (response.HttpResponseCode == 404)
+            if (response.HttpResponseCode == 404)
                 return NotFound(response.Message);
-            else
-                return BadRequest(response.Message);
+            return BadRequest(response.Message);
+        }
+        
+        [HttpPost("PostEmployee")]
+        public async Task<ActionResult> PostEmployee(EmployeePostDto employeePostDto, int employeeId)
+        {
+            var response = await _employeeService.PostEmployee(employeePostDto, employeeId);
+            if (response.HttpResponseCode == 200)
+                return Ok();
+            if (response.HttpResponseCode == 404)
+                return NotFound(response.Message);
+            return BadRequest(response.Message);
+        }
+        
+        [HttpPut("RevokeEntrancePermission")]
+        public async Task<ActionResult> RevokeEntrancePermission(int entrancePermissionId, int employeeId)
+        {
+            var response = await _employeeService.RevokeEntrancePermission(entrancePermissionId, employeeId);
+            if (response.HttpResponseCode == 200)
+                return Ok();
+            if (response.HttpResponseCode == 404)
+                return NotFound(response.Message);
+            return BadRequest(response.Message);
+        }
+        
+        [HttpPut("SignVisitedPlace")]
+        public async Task<ActionResult> SignVisitedPlace(int entrancePermissionId, int employeeId)
+        {
+            var response = await _employeeService.SignVisitedPlace(entrancePermissionId, employeeId);
+            if (response.HttpResponseCode == 200)
+                return Ok();
+            if (response.HttpResponseCode == 404)
+                return NotFound(response.Message);
+            return BadRequest(response.Message);
         }
     }
 }

@@ -105,31 +105,6 @@ builder.Services.AddAuthentication()
 
                 return Task.CompletedTask;
             },
-
-            // OnTokenValidated = async ctx =>
-            // {
-            //     var sp = builder.Services.BuildServiceProvider();
-            //     var dbContext = sp.GetService<DataContext>();
-            //     var id = await dbContext!.AuthIds
-            //         .FirstOrDefaultAsync(a => a.AuthId.ToString() == ctx.Principal!.FindFirstValue("ID"));
-            //
-            //     if (id == null)
-            //     {
-            //         ctx.Fail("you need to register in ViunaGuard");
-            //     }
-            //     else
-            //     {
-            //         ctx.Principal = new ClaimsPrincipal(
-            //             new ClaimsIdentity(
-            //                 new[]
-            //                 {
-            //                     new Claim("ID", id.ViunaUserId.ToString()),
-            //                     new Claim("Type", ctx.Principal!.FindFirstValue("Type")!)
-            //                 },
-            //                 "Cookie"
-            //             ));
-            //     }
-            // }
         };
     })
     .AddOAuth("OAuth", o =>

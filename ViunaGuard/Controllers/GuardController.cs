@@ -31,10 +31,9 @@ namespace ViunaGuard.Controllers
         
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
-            else if (response.HttpResponseCode == 404)
+            if (response.HttpResponseCode == 404)
                 return NotFound(response.Message);
-            else
-                return BadRequest(response.Message);
+            return BadRequest(response.Message);
         }
 
         [HttpGet("GetCar")]
@@ -63,10 +62,9 @@ namespace ViunaGuard.Controllers
             var response = await _guardService.PostEntrances(entranceGroupPost, employeeId);
             if (response.HttpResponseCode == 200)
                 return Ok();
-            else if (response.HttpResponseCode == 404)
+            if (response.HttpResponseCode == 404)
                 return NotFound(response.Message);
-            else
-                return BadRequest(response.Message);
+            return BadRequest(response.Message);
         }
         
         // [HttpGet("GetCar")]
@@ -87,10 +85,31 @@ namespace ViunaGuard.Controllers
             var response = await _guardService.CheckEntrancePermission(nationalId, employeeId);
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
-            else if (response.HttpResponseCode == 404)
+            if (response.HttpResponseCode == 404)
                 return NotFound(response.Message);
-            else
-                return BadRequest(response.Message);
+            return BadRequest(response.Message);
+        }
+        
+        [HttpGet("CheckExitPermission")]
+        public async Task<ActionResult<EntrancePermissionCheckDto>> CheckExitPermission(string nationalId, int employeeId)
+        {
+            var response = await _guardService.CheckExitPermission(nationalId, employeeId);
+            if (response.HttpResponseCode == 200)
+                return Ok(response.Data);
+            if (response.HttpResponseCode == 404)
+                return NotFound(response.Message);
+            return BadRequest(response.Message);
+        }
+        
+        [HttpGet("PostPerson")]
+        public async Task<ActionResult> PostPerson(PersonPostDto personPostDto, int employeeId)
+        {
+            var response = await _guardService.PostPerson(personPostDto, employeeId);
+            if (response.HttpResponseCode == 200)
+                return Ok(response);
+            if (response.HttpResponseCode == 404)
+                return NotFound(response.Message);
+            return BadRequest(response.Message);
         }
 
     }

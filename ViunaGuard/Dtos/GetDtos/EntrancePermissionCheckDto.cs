@@ -9,5 +9,7 @@ public class EntrancePermissionCheckDto
     public TwoShiftGetDto? Shifts { get; set; }
     public List<EntrancePermissionGetDto> EntrancePermissions { get; set; } = new();
     [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
+    public bool IsInBlackList { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
     public bool DoesHavePermission { get; set; }
 }

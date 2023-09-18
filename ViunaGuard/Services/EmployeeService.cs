@@ -21,8 +21,18 @@ public class EmployeeService : IEmployeeService
     public async Task<ServiceResponse> PostPeriodicShift(PeriodicShiftPostDto shift, int employeeId)
     {
         var response = new ServiceResponse();
-        var employee = await _context.Employees.FindAsync(employeeId);
+        var employee = await _context.Employees
+            .Include(e => e.UserAccessRole)
+            .ThenInclude(e => e.UserAccess)
+            .FirstOrDefaultAsync(e =>  e.Id == employeeId);
         if (CheckEmployeeId(employee, response, out var serviceResponse)) return serviceResponse;
+
+        if (!employee!.UserAccessRole.UserAccess.CanChangeShifts)
+        {
+            response.HttpResponseCode = 400;
+            response.Message = "You can't add shifts";
+            return response;
+        }
 
         var employeePeriodicShift = _mapper.Map<EmployeePeriodicShift>(shift);
         employeePeriodicShift.OrganizationId = employee!.OrganizationId;
@@ -65,11 +75,21 @@ public class EmployeeService : IEmployeeService
     public async Task<ServiceResponse<List<EmployeeShift>>> PostShift(ShiftPostDto shift, int employeeId)
     {
         var response = new ServiceResponse<List<EmployeeShift>>();
-        var employee = await _context.Employees.FindAsync(employeeId);
+        var employee = await _context.Employees
+            .Include(e => e.UserAccessRole)
+            .ThenInclude(e => e.UserAccess)
+            .FirstOrDefaultAsync(e =>  e.Id == employeeId);
         if (CheckEmployeeId(employee, response, out var serviceResponse))
         {
-            response.Message = serviceResponse.Message;
             response.HttpResponseCode = serviceResponse.HttpResponseCode;
+            response.Message = serviceResponse.Message;
+            return response;
+        };
+
+        if (!employee!.UserAccessRole.UserAccess.CanChangeShifts)
+        {
+            response.HttpResponseCode = 400;
+            response.Message = "You can't add shifts";
             return response;
         }
 
@@ -254,11 +274,18 @@ public class EmployeeService : IEmployeeService
         var employee = await _context.Employees
             .Include(e => e.UserAccessRole)
             .ThenInclude(e => e.UserAccess)
-            .FirstOrDefaultAsync(e => e.Id == employeeId)!;
+            .FirstOrDefaultAsync(e => e.Id == employeeId);
         if (CheckEmployeeId(employee, response, out var serviceResponse))
         {
             response.Message = serviceResponse.Message;
             response.HttpResponseCode = serviceResponse.HttpResponseCode;
+            return response;
+        }
+
+        if (employee.UserAccessRole.UserAccess.CanSeeEntrancePermissions)
+        {
+            response.HttpResponseCode = 400;
+            response.Message = "You can't see the entrance permissions";
             return response;
         }
 
@@ -295,18 +322,42 @@ public class EmployeeService : IEmployeeService
 
     public async Task<ServiceResponse> PostEmployee(EmployeePostDto employeePostDto, int employeeId)
     {
-        var employee = _mapper.Map<Employee>(employeePostDto);
+        var response = new ServiceResponse();
+        var employee = await _context.Employees
+            .Include(e => e.UserAccessRole)
+            .ThenInclude(e => e.UserAccess)
+            .FirstOrDefaultAsync(e => e.Id == employeeId);
+        if (CheckEmployeeId(employee, response, out var serviceResponse)) return serviceResponse;
+
+        if (!employee!.UserAccessRole.UserAccess.CanAddEmployees)
+        {
+            response.HttpResponseCode = 400;
+            response.Message = "You cant add employees";
+            return response;
+        }
+
         await _context.Employees.AddAsync(employee);
         await _context.SaveChangesAsync();
-        
-        throw new NotImplementedException();
+
+        response.HttpResponseCode = 200;
+        return response;
     }
 
     public async Task<ServiceResponse> PostEmployeeWeeklyShift(WeeklyShiftPostDto weeklyShiftPostDto, int employeeId)
     {
         var response = new ServiceResponse();
-        var employee = await _context.Employees.FindAsync(employeeId);
+        var employee = await _context.Employees
+            .Include(e => e.UserAccessRole)
+            .ThenInclude(e => e.UserAccess)
+            .FirstOrDefaultAsync(e =>  e.Id == employeeId);
         if (CheckEmployeeId(employee, response, out var serviceResponse)) return serviceResponse;
+
+        if (!employee!.UserAccessRole.UserAccess.CanChangeShifts)
+        {
+            response.HttpResponseCode = 400;
+            response.Message = "You can't add shifts";
+            return response;
+        }
 
         var shiftEmployee = await _context.Employees.FindAsync(weeklyShiftPostDto.EmployeeId);
         if (shiftEmployee == null)
@@ -316,7 +367,7 @@ public class EmployeeService : IEmployeeService
             return response;
         }
 
-        if (shiftEmployee.OrganizationId != employee!.OrganizationId)
+        if (shiftEmployee.OrganizationId != employee.OrganizationId)
         {
             response.HttpResponseCode = 400;
             response.Message = "You cant add shift for this employee";
@@ -349,8 +400,18 @@ public class EmployeeService : IEmployeeService
     public async Task<ServiceResponse> PostEmployeeMonthlyShift(MonthlyShiftPostDto monthlyShiftPostDto, int employeeId)
     {
         var response = new ServiceResponse();
-        var employee = await _context.Employees.FindAsync(employeeId);
+        var employee = await _context.Employees
+            .Include(e => e.UserAccessRole)
+            .ThenInclude(e => e.UserAccess)
+            .FirstOrDefaultAsync(e =>  e.Id == employeeId);
         if (CheckEmployeeId(employee, response, out var serviceResponse)) return serviceResponse;
+
+        if (!employee!.UserAccessRole.UserAccess.CanChangeShifts)
+        {
+            response.HttpResponseCode = 400;
+            response.Message = "You can't add shifts";
+            return response;
+        }
 
         var shiftEmployee = await _context.Employees.FindAsync(monthlyShiftPostDto.EmployeeId);
         if (shiftEmployee == null)
@@ -386,6 +447,13 @@ public class EmployeeService : IEmployeeService
             .ThenInclude(e => e.UserAccess)
             .FirstAsync(e => e.Id == employeeId);
         if (CheckEmployeeId(employee, response, out var serviceResponse)) return serviceResponse;
+
+        if (employee.UserAccessRole.UserAccess.CanSignEntrancePermissions)
+        {
+            response.HttpResponseCode = 400;
+            response.Message = "You can't sign entrance Permissions";
+            return response;
+        }
 
         var permission = await _context.EntrancePermissions
             .Include(e => e.Signatures)
@@ -435,15 +503,113 @@ public class EmployeeService : IEmployeeService
         response.Message = "you dont need to sign this entrance permission";
         return response;
     }
+    
+    public async Task<ServiceResponse> RevokeEntrancePermission(int entrancePermissionId, int employeeId)
+    {
+        var response = new ServiceResponse();
+        var employee = await _context.Employees
+            .Include(e => e.UserAccessRole)
+            .ThenInclude(e => e.UserAccess)
+            .FirstAsync(e => e.Id == employeeId);
+        if (CheckEmployeeId(employee, response, out var serviceResponse)) return serviceResponse;
+
+        if (employee.UserAccessRole.UserAccess.CanRevokeEntrancePermissions)
+        {
+            response.HttpResponseCode = 400;
+            response.Message = "You can't Revoke entrance Permissions";
+            return response;
+        }
+
+        var permission = await _context.EntrancePermissions
+            .FindAsync(entrancePermissionId);
+
+        if (permission.OrganizationId != employee.OrganizationId)
+        {
+            response.HttpResponseCode = 400;
+            response.Message = "you cant access this entrance permission";
+            return response;
+        }
+        
+        if (permission.EndValidityTime < DateTime.Now)
+        {
+            response.HttpResponseCode = 400;
+            response.Message = "this Entrance permission has been expired";
+            return response;
+        }
+
+        var permissionNeeds = await _context.SignatureNeedForEntrancePermissions
+            .Where(s => s.OrganizationId == employee.OrganizationId)
+            .ToListAsync();
+        
+        if (permissionNeeds[permission.Signatures.Count].MinAuthorityLevel <=
+            employee.UserAccessRole.UserAccess.AuthorityLevel)
+        {
+            permission.Revoked = true;
+            
+            _context.EntrancePermissions.Update(permission);
+            await _context.SaveChangesAsync();
+            response.HttpResponseCode = 200;
+            return response;
+        }
+
+        response.HttpResponseCode = 400;
+        response.Message = "you can't Revoke this entrance permission";
+        return response;
+    }
+
+    public async Task<ServiceResponse> SignVisitedPlace(int entrancePermissionId, int employeeId)
+    {
+        var response = new ServiceResponse();
+        var employee = await _context.Employees
+            .Include(e => e.UserAccessRole)
+            .ThenInclude(e => e.UserAccess)
+            .FirstAsync(e => e.Id == employeeId);
+        if (CheckEmployeeId(employee, response, out var serviceResponse)) return serviceResponse;
+        
+        if (employee.UserAccessRole.UserAccess.CanSignVisitedPlace)
+        {
+            response.HttpResponseCode = 400;
+            response.Message = "You can't Sign visited place";
+            return response;
+        }
+
+        var permission = await _context.EntrancePermissions
+            .FindAsync(entrancePermissionId);
+
+        if (permission.OrganizationPlaceId != employee.WorkPlaceId)
+        {
+            response.HttpResponseCode = 400;
+            response.Message = "you cant access this entrance permission";
+            return response;
+        }
+        
+        permission.DidVisitOrgPlace = true;
+        permission.OrgPlaceSignEmployeeId = employeeId;
+        
+        _context.EntrancePermissions.Update(permission);
+        await _context.SaveChangesAsync();
+        response.HttpResponseCode = 200;
+        return response;
+    }
 
     public async Task<ServiceResponse<List<EntrancePermissionGetDto>>> GetPermissions(int employeeId)
     {
         var response = new ServiceResponse<List<EntrancePermissionGetDto>>();
-        var employee = await _context.Employees.FindAsync(employeeId);
+        var employee = await _context.Employees
+            .Include(e => e.UserAccessRole)
+            .ThenInclude(e => e.UserAccess)
+            .FirstOrDefaultAsync(e => e.Id == employeeId);
         if (CheckEmployeeId(employee, response, out var serviceResponse))
         {
             response.Message = serviceResponse.Message;
             response.HttpResponseCode = serviceResponse.HttpResponseCode;
+            return response;
+        }
+
+        if (employee.UserAccessRole.UserAccess.CanSeeEntrancePermissions)
+        {
+            response.HttpResponseCode = 400;
+            response.Message = "You can't see entrance permissions";
             return response;
         }
 
@@ -458,5 +624,6 @@ public class EmployeeService : IEmployeeService
 
         response.HttpResponseCode = 200;
         response.Data = permissions;
-        return response;    }
+        return response;    
+    }
 }

@@ -1,9 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
-using ViunaGuard.Models;
-
-namespace ViunaGuard.Dtos
+﻿namespace ViunaGuard.Dtos
 {
     public class EntrancePermissionGetDto
     {
@@ -13,6 +8,9 @@ namespace ViunaGuard.Dtos
         public DateTime EndValidityTime { get; set; }
         public Car? Car { get; set; }
         public bool PermissionGranted { get; set; }
+        public OrganizationPlace? OrganizationPlace { get; set; }
+        public bool DidVisitOrgPlace { get; set; } = false;
+        public Employee? OrgPlaceSignEmployee { get; set; }
         public List<SignedPermissionGetDto> Signatures { get; set; } = new();
     }
 }

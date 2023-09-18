@@ -49,14 +49,16 @@ namespace ViunaGuard.Models
         public int? MaritalStatusId { get; set; }
         public MaritalStatus? MaritalStatus { get; set; }
         [JsonIgnore]
-        public List<Car> Cars { get; set; } = new List<Car>();
+        public List<Car> Cars { get; set; } = new();
         [JsonIgnore]
-        public List<Employee> Jobs { get; set; } = new List<Employee>();
+        public List<Employee> Jobs { get; set; } = new();
         [JsonIgnore]
-        public List<Entrance> Entrances { get; set; } = new List<Entrance>();
+        public List<Entrance> Entrances { get; set; } = new();
         [JsonIgnore]
-        public List<EntrancePermission> EntrancePermissions { get; set; } = new List<EntrancePermission>();
+        public List<EntrancePermission> EntrancePermissions { get; set; } = new();
         [JsonIgnore]
-        public List<Organization> BannedFrom { get; set; } = new List<Organization>();
+        public List<Organization> BannedFrom { get; set; } = new();
+        //TODO signed implementation
+        public bool Signed { get; set; } = false;
     }
 }

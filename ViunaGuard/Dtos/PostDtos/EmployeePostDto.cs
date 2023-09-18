@@ -9,14 +9,12 @@ namespace ViunaGuard.Dtos;
 public class EmployeePostDto
 {
     [Required]
-    [Key]
-    public int Id { get; set; }
-    [Required]
     public int OrganizationId { get; set; }
     [Required] 
     public string PersonId { get; set; } = null!;
     [Required]
     public int EmployeeTypeId{ get; set; }
-    public string? PersonnelID { get; set; } = string.Empty;
-    public int AuthorityLevelId { get; set; }
+    public string? PersonnelId { get; set; } = string.Empty;
+    public int UserAccessRoleId { get; set; }
+    public int WorkPlaceId { get; set; }
 }

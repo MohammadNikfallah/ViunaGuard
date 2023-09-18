@@ -14,5 +14,10 @@ namespace ViunaGuard.Models
         public bool AlwaysHaveEntrancePermission { get; set; }
         public bool CanSeeOtherGuardsEntrances { get; set; }
         public bool CanSeeOtherDoorsEntrances { get; set; }
+        public bool CanAddEmployees { get; set; }
+        public bool CanSignEntrancePermissions { get; set; }
+        public bool CanRevokeEntrancePermissions { get; set; }
+        public bool CanSeeEntrancePermissions { get; set; }
+        public bool CanSignVisitedPlace { get; set; }
     }
 }

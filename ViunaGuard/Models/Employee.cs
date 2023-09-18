@@ -25,7 +25,10 @@ namespace ViunaGuard.Models
         public string? PersonnelId { get; set; }
         [ForeignKey("UserAccessRole")]
         public int UserAccessRoleId { get; set; }
-        [JsonIgnore] 
+        [JsonIgnore]
         public UserAccessRole UserAccessRole { get; set; } = null!;
+        public int WorkPlaceId { get; set; }
+        [JsonIgnore]
+        public OrganizationPlace? WorkPlace { get; set; }
     }
 }

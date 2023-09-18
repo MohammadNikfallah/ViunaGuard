@@ -11,4 +11,5 @@ public class EntrancePermissionPostDto
     [Required]
     public DateTime EndValidityTime{ get; set; }
     public int? CarId { get; set; }
+    public int OrganizationPlaceId { get; set; }
 }

@@ -27,18 +27,6 @@ namespace ViunaGuard.Controllers
                 return BadRequest(response.Message);
         }
 
-        [HttpPost("postPerson")]
-        public async Task<ActionResult<List<Person>>> PostPerson(PersonPostDto personDto)
-        {
-            var response = await _userService.PostPerson(personDto);
-            if (response.HttpResponseCode == 200)
-                return Ok(response.Data);
-            else if (response.HttpResponseCode == 404)
-                return NotFound(response.Message);
-            else
-                return BadRequest(response.Message);
-        }
-
         [HttpGet("GetOrganizationSignatureNeed")]
         public async Task<ActionResult<List<SignatureNeedForEntrancePermission>>> GetOrganizationSignatureNeed
             (int organizationId)

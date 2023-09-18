@@ -28,5 +28,8 @@ namespace ViunaGuard.Models
         public int? ShiftMakerEmployeeId { get; set; }
         [JsonIgnore]
         public Employee? ShiftMakerEmployee { get; set; } = null!;
+        public int WorkPlaceId { get; set; }
+        [JsonIgnore]
+        public OrganizationPlace? WorkPlace { get; set; }
     }
 }

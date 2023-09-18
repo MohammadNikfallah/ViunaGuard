@@ -24,10 +24,17 @@ namespace ViunaGuard.Models
         public int? CarId { get; set; }
         [JsonIgnore]
         public Car? Car { get; set; }
-        [Required]
-        public bool PermissionGranted { get; set; } = false;
+        public bool PermissionGranted { get; set; }
+        public bool Revoked { get; set; }
+        public int OrganizationPlaceId { get; set; }
+        [JsonIgnore]
+        public OrganizationPlace? OrganizationPlace { get; set; }
+        public bool DidVisitOrgPlace { get; set; } = false;
+        [ForeignKey("OrgPlaceEmployee")]
+        public int OrgPlaceSignEmployeeId { get; set; }
+        [JsonIgnore]
+        public Employee? OrgPlaceSignEmployee { get; set; }
         [JsonIgnore]
         public List<SignedEntrancePermission> Signatures { get; set; } = new();
-
     }
 }
