@@ -60,7 +60,7 @@ namespace ViunaGuard.Services
         }
         
         public async Task<ServiceResponse<List<EntranceGroupGetDto>>> GetEntrances(DateOnly startDate, DateOnly endDate, int doorId
-            , int guardId, int enterOrExitId, int employeeId)
+            , int guardId, int enterOrExitId, int employeeId, int entranceCount)
         {
             var response = new ServiceResponse<List<EntranceGroupGetDto>>();
             var employee = await _context.Employees
@@ -94,7 +94,7 @@ namespace ViunaGuard.Services
                 entranceGroup = entranceGroup.Where(e => e.GuardId == guardId);
 
             response.Data = await entranceGroup
-                .Select(e => _mapper.Map<EntranceGroupGetDto>(e)).ToListAsync();
+                .Select(e => _mapper.Map<EntranceGroupGetDto>(e)).OrderBy(e => e.Time).Take(entranceCount).ToListAsync();
 
             response.HttpResponseCode = 200;
             return response;

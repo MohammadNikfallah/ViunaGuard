@@ -8,5 +8,6 @@ namespace ViunaGuard.Dtos
         public DateTime FinishTime { get; set; }
         public DoorGetDto? GuardDoor { get; set; }
         public int? ShiftMakerEmployeeId { get; set; }
+        public OrganizationPlace? WorkPlace { get; set; }
     }
 }

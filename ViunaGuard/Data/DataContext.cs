@@ -61,6 +61,7 @@ namespace ViunaGuard.Data
         public DbSet<SignedEntrancePermission> SignedEntrancePermissions { get; set; } = null!;
         public DbSet<EmployeeShiftPeriodicMonthly> EmployeeShiftsPeriodicMonthly { get; set; } = null!;
         public DbSet<UserAccessRole> UserAccessRole { get; set; } = null!;
+        public DbSet<OrganizationPlace> OrganizationPlace { get; set; } = null!;
 
 
         public DbSet<CarBrand> CarBrands {  get; set; } = null!;

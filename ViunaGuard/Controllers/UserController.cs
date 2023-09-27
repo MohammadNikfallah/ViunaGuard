@@ -21,10 +21,9 @@ namespace ViunaGuard.Controllers
             var response = await _userService.PostCar(car, personId);
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
-            else if (response.HttpResponseCode == 404)
+            if (response.HttpResponseCode == 404)
                 return NotFound(response.Message);
-            else
-                return BadRequest(response.Message);
+            return BadRequest(response.Message);
         }
 
         [HttpGet("GetOrganizationSignatureNeed")]
@@ -34,10 +33,9 @@ namespace ViunaGuard.Controllers
             var response = await _userService.GetOrganizationSignatureNeed(organizationId);
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
-            else if (response.HttpResponseCode == 404)
+            if (response.HttpResponseCode == 404)
                 return NotFound(response.Message);
-            else
-                return BadRequest(response.Message);
+            return BadRequest(response.Message);
         }
 
         [HttpGet("GetPersonDetails")]
@@ -46,10 +44,9 @@ namespace ViunaGuard.Controllers
             var response = await _userService.GetPersonDetails();
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
-            else if (response.HttpResponseCode == 404)
+            if (response.HttpResponseCode == 404)
                 return NotFound(response.Message);
-            else
-                return BadRequest(response.Message);
+            return BadRequest(response.Message);
         }
 
         [HttpGet("GetEntrancePermissions")]
@@ -58,10 +55,9 @@ namespace ViunaGuard.Controllers
             var response = await _userService.GetEntrancePermissions();
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);
-            else if (response.HttpResponseCode == 404)
+            if (response.HttpResponseCode == 404)
                 return NotFound(response.Message);
-            else
-                return BadRequest(response.Message);
+            return BadRequest(response.Message);
         }
 
         [HttpGet("GetPersonJobs")]
@@ -70,10 +66,9 @@ namespace ViunaGuard.Controllers
             var response = await _userService.GetPersonJobs();
             if (response.HttpResponseCode == 200)
                     return Ok(response.Data);
-            else if (response.HttpResponseCode == 404)
+            if (response.HttpResponseCode == 404)
                 return NotFound(response.Message);
-            else
-                return BadRequest(response.Message);
+            return BadRequest(response.Message);
         }
 
         [HttpPost("PostEntrancePermission")]
@@ -82,10 +77,9 @@ namespace ViunaGuard.Controllers
             var response = await _userService.PostEntrancePermission(entrancePermissionPostDto);
             if (response.HttpResponseCode == 200)
                     return Ok();
-            else if (response.HttpResponseCode == 404)
+            if (response.HttpResponseCode == 404)
                 return NotFound(response.Message);
-            else
-                return BadRequest(response.Message);
+            return BadRequest(response.Message);
         }
     }
 }

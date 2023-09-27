@@ -11,12 +11,8 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
-using System.Security.Claims;
-using System.Text;
 using System.Text.Json;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.HttpLogging;
-using NuGet.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -119,8 +115,7 @@ builder.Services.AddAuthentication()
         o.CallbackPath = "/Auth/custom_cb";
         o.Events.OnTicketReceived = async x =>
         {
-            // x.ReturnUri = "http://192.168.0.112:7123/";
-            var tokens = x.Properties.GetTokens();
+            var tokens = x.Properties.GetTokens().ToList();
             var access = tokens.First(t => t.Name == "access_token").Value;
             var refresh = tokens.First(t => t.Name == "access_token").Value;
             x.Response.Headers.Add("Access-Token", access);
@@ -152,27 +147,7 @@ builder.Services.AddAuthentication()
             var payloadJson = Base64UrlTextEncoder.Decode(payloadBase64);
             var payload = JsonDocument.Parse(payloadJson);
             x.RunClaimActions(payload.RootElement);
-            
-            // x.Response.Headers.Add("Refresh-token",x.RefreshToken);
-            // x.Response.Headers.Add("Access-token",x.AccessToken);
-            
-            // Serialize using the settings provided
-            // using MemoryStream stream = new MemoryStream();
-            // var jsonObject = new Tokens()
-            // {
-            //     AccessToken = x.AccessToken,
-            //     RefreshToken = x.RefreshToken
-            // };
-            // await JsonSerializer.SerializeAsync(stream, jsonObject, typeof(Tokens));
-            // ReadOnlyMemory<byte> readOnlyMemory = new ReadOnlyMemory<byte>(stream.ToArray());
-            //
-            // x.Response.StatusCode = 200;
-            //
-            // x.Response.ContentType = "application/json; charset=utf-8";
-            //
-            // await x.Response.Body.WriteAsync(readOnlyMemory);
-            // await x.Response.Body.FlushAsync();
-            
+
             x.Response.Cookies.Append("VAT", x.AccessToken, new CookieOptions
             {
                 Expires = DateTime.Now.AddHours(1),
@@ -220,12 +195,6 @@ builder.Services.AddAuthorization(o =>
         .AddAuthenticationSchemes("JwtBearer")
         .RequireClaim("Type", "AccessToken")
         .Build();
-    
-    o.AddPolicy("RefreshToken",new AuthorizationPolicyBuilder()
-        .RequireAuthenticatedUser()
-        .AddAuthenticationSchemes("JwtBearer")
-        .RequireClaim("Type", "RefreshToken")
-        .Build());
 });
 
 var app = builder.Build();
@@ -243,12 +212,6 @@ app.UseHttpLogging();
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.MapGet("/test", () =>
-{
-    
-    return Task.CompletedTask;
-});
 
 app.Run();
 

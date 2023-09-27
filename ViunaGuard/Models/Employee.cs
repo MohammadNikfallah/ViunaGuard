@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using ViunaGuard.Models.Enums;
 
@@ -27,8 +28,5 @@ namespace ViunaGuard.Models
         public int UserAccessRoleId { get; set; }
         [JsonIgnore]
         public UserAccessRole UserAccessRole { get; set; } = null!;
-        public int WorkPlaceId { get; set; }
-        [JsonIgnore]
-        public OrganizationPlace? WorkPlace { get; set; }
     }
 }

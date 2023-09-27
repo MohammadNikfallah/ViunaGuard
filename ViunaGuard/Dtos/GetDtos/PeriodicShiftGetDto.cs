@@ -9,4 +9,5 @@ public class PeriodicShiftGetDto
     public DateTime FinishTime { get; set; }
     public Door? GuardDoor { get; set; }
     public EmployeeGetDto? ShiftMakerEmployee { get; set; } = null!;
+    public OrganizationPlace? WorkPlace { get; set; }
 }

@@ -26,6 +26,7 @@ namespace ViunaGuard.Models
         [ForeignKey("EnterOrExit")]
         public int EnterOrExitId { get; set; }
         public EnterOrExit? EnterOrExit{ get; set; }
+        public bool Permitted { get; set; }
         [JsonIgnore]
         public List<Entrance> Entrances { get; set; } = new();
     }

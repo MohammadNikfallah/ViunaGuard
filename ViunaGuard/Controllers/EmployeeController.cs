@@ -70,7 +70,7 @@ namespace ViunaGuard.Controllers
             return BadRequest(response.Message);
         }
 
-        [HttpGet("GetEmployeeShifts")]
+        [HttpGet("GetShifts")]
         public async Task<ActionResult<TwoShiftGetDto>> GetEmployeeShifts(int employeeId)
         {
             var response = await _employeeService.GetEmployeeShifts(employeeId);
@@ -81,7 +81,7 @@ namespace ViunaGuard.Controllers
             return BadRequest(response.Message);
         }
 
-        [HttpPost("PostEmployeeWeeklyShift")]
+        [HttpPost("PostWeeklyShift")]
         public async Task<ActionResult> PostEmployeeWeeklyShift(WeeklyShiftPostDto weeklyShiftPostDto, int employeeId)
         {
             var response = await _employeeService.PostEmployeeWeeklyShift(weeklyShiftPostDto, employeeId);
@@ -92,7 +92,7 @@ namespace ViunaGuard.Controllers
             return BadRequest(response.Message);
         }
         
-        [HttpPost("PostEmployeeMonthlyShift")]
+        [HttpPost("PostMonthlyShift")]
         public async Task<ActionResult> PostEmployeeMonthlyShift(MonthlyShiftPostDto monthlyShiftPostDto, int employeeId)
         {
             var response = await _employeeService.PostEmployeeMonthlyShift(monthlyShiftPostDto, employeeId);

@@ -576,7 +576,9 @@ public class EmployeeService : IEmployeeService
         var permission = await _context.EntrancePermissions
             .FindAsync(entrancePermissionId);
 
-        if (permission.OrganizationPlaceId != employee.WorkPlaceId)
+        var currentShift = await GetCurrentShift(employeeId);
+
+        if (permission.OrganizationPlaceId != currentShift.Data.WorkPlace.Id)
         {
             response.HttpResponseCode = 400;
             response.Message = "you cant access this entrance permission";

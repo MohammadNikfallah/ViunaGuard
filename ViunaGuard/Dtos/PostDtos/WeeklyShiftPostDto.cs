@@ -13,4 +13,5 @@ public class WeeklyShiftPostDto
     [Required]
     public DateTime FinishTime { get; set; }
     public int? GuardDoorId { get; set; }
+    public int WorkPlaceId { get; set; }
 }

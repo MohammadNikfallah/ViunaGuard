@@ -22,12 +22,15 @@ namespace ViunaGuard.Controllers
             _mapper = mapper;
         }
 
+        /// <summary>
+        /// Get Entrances With Filters.
+        /// </summary>
         [HttpGet("GetEntrances")]
         public async Task<ActionResult<List<EntranceGroupGetDto>>> GetEntrances([Required] DateOnly startDate,[Required] DateOnly endDate
-            , int doorId, int guardId, int enterOrExitId, int employeeId)
+            , int doorId, int guardId, int enterOrExitId,[Required] int employeeId,[Required] int entranceCount)
         {
             var response = await  _guardService.GetEntrances
-                (startDate, endDate, doorId, guardId, enterOrExitId, employeeId);
+                (startDate, endDate, doorId, guardId, enterOrExitId, employeeId, entranceCount);
         
             if (response.HttpResponseCode == 200)
                 return Ok(response.Data);

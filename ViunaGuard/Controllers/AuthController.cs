@@ -1,8 +1,10 @@
-﻿using System.Net;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using Microsoft.IdentityModel.Tokens;
 
 
 namespace ViunaGuard.Controllers
@@ -79,10 +81,13 @@ namespace ViunaGuard.Controllers
         }
 
         [HttpGet("RefreshToken")]
-        [Authorize("RefreshToken")]
-        public async Task<ActionResult> RefreshToken()
+        public async Task<ActionResult> RefreshToken(string? refreshToken)
         {
-            var refreshToken = Request.Cookies.FirstOrDefault(x => x.Key == "VRT").Value;
+            var refreshTokenCookie = Request.Cookies.FirstOrDefault(x => x.Key == "VRT").Value;
+            if (refreshToken.IsNullOrEmpty())
+            {
+                refreshToken = refreshTokenCookie;
+            }
             if (refreshToken == null)
             {
                 refreshToken = Request.Headers["Authorization"];
