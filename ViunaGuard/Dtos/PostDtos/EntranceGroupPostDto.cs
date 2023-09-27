@@ -15,6 +15,8 @@ namespace ViunaGuard.Dtos
         [Required]
         public int EnterOrExitId { get; set; }
         [Required]
+        public bool Permitted { get; set; }
+        [Required]
         public List<EntrancePostDto> Entrances { get; set; } = new();
     }
 }

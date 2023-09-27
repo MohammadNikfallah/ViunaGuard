@@ -77,6 +77,7 @@ namespace ViunaGuard.Services
             var entranceGroup = _context.EntranceGroups
                 .Include(e => e.Entrances)
                 .ThenInclude(e => e.Person)
+                .Include(e => e.EnterOrExit)
                 .Where(e => e.Entrances.Count>0 && e.OrganizationId == employee!.OrganizationId);
 
             if (startDate != DateOnly.MinValue && endDate != DateOnly.MinValue)
@@ -94,7 +95,7 @@ namespace ViunaGuard.Services
                 entranceGroup = entranceGroup.Where(e => e.GuardId == guardId);
 
             response.Data = await entranceGroup
-                .Select(e => _mapper.Map<EntranceGroupGetDto>(e)).OrderBy(e => e.Time).Take(entranceCount).ToListAsync();
+                .OrderBy(e => e.Time).Take(entranceCount).Select(e => _mapper.Map<EntranceGroupGetDto>(e)).ToListAsync();
 
             response.HttpResponseCode = 200;
             return response;

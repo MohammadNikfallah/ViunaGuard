@@ -21,10 +21,7 @@ namespace ViunaGuard.Controllers
             _context = context;
             _mapper = mapper;
         }
-
-        /// <summary>
-        /// Get Entrances With Filters.
-        /// </summary>
+        
         [HttpGet("GetEntrances")]
         public async Task<ActionResult<List<EntranceGroupGetDto>>> GetEntrances([Required] DateOnly startDate,[Required] DateOnly endDate
             , int doorId, int guardId, int enterOrExitId,[Required] int employeeId,[Required] int entranceCount)
@@ -38,28 +35,18 @@ namespace ViunaGuard.Controllers
                 return NotFound(response.Message);
             return BadRequest(response.Message);
         }
-
-        [HttpGet("GetCar")]
-        public async Task<ActionResult<Car>> GetCar(int carId, int employeeId)
-        {
-            var car = await _context.Cars.FindAsync(carId);
-            if (car == null)
-                return NotFound("Car not Found!");
-            return Ok(car);
-        }
         
         [HttpGet("GetDoors")]
         public async Task<ActionResult<List<DoorGetDto>>> GetDoors(int employeeId)
         {
-            var guardId = HttpContext.User.FindFirst("EmployeeId");
-            var guard = await _context.Employees.FindAsync(int.Parse(guardId!.Value));
+            var guard = await _context.Employees.FindAsync(employeeId);
             var doors = await _context.Doors.Where(d => d.OrganizationId == guard!.OrganizationId)
                 .Select(d => _mapper.Map<DoorGetDto>(d)).ToListAsync();
             return Ok(doors);
         }
         
         [HttpPost("PostEntrances")]
-        public async Task<ActionResult> PostSameGroupEntrances
+        public async Task<ActionResult> PostEntrances
             (EntranceGroupPostDto entranceGroupPost, int employeeId)
         {
             var response = await _guardService.PostEntrances(entranceGroupPost, employeeId);

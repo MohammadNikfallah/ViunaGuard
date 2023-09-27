@@ -13,5 +13,7 @@ public class EntranceGroupGetDto
     public Employee Guard { get; set; } = null!;
     public DoorGetDto Door { get; set; } = null!;
     public EnterOrExit? EnterOrExit{ get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
+    public bool Permitted { get; set; }
     public List<EntranceGetDto> Entrances { get; set; } = new();
 }

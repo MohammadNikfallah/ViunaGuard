@@ -131,6 +131,7 @@ namespace ViunaGuard.Services
 
             var data = await _context.People
                 .Include(p => p.EntrancePermissions)
+                .ThenInclude(e => e.Signatures)
                 .FirstOrDefaultAsync
                 (p => p.Id == id);
 

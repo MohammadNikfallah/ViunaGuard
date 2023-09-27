@@ -17,6 +17,5 @@ namespace ViunaGuard.Dtos
         public Car? Car { get; set; }
         public int? GuestCount { get; set; }
         public bool IsDriver { get; set; } = false;
-        public bool Permitted { get; set; }
     }
 }

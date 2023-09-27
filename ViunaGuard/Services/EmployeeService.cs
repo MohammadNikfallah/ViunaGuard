@@ -282,7 +282,7 @@ public class EmployeeService : IEmployeeService
             return response;
         }
 
-        if (employee.UserAccessRole.UserAccess.CanSeeEntrancePermissions)
+        if (!employee.UserAccessRole.UserAccess.CanSeeEntrancePermissions)
         {
             response.HttpResponseCode = 400;
             response.Message = "You can't see the entrance permissions";
@@ -448,7 +448,7 @@ public class EmployeeService : IEmployeeService
             .FirstAsync(e => e.Id == employeeId);
         if (CheckEmployeeId(employee, response, out var serviceResponse)) return serviceResponse;
 
-        if (employee.UserAccessRole.UserAccess.CanSignEntrancePermissions)
+        if (!employee.UserAccessRole.UserAccess.CanSignEntrancePermissions)
         {
             response.HttpResponseCode = 400;
             response.Message = "You can't sign entrance Permissions";
@@ -513,7 +513,7 @@ public class EmployeeService : IEmployeeService
             .FirstAsync(e => e.Id == employeeId);
         if (CheckEmployeeId(employee, response, out var serviceResponse)) return serviceResponse;
 
-        if (employee.UserAccessRole.UserAccess.CanRevokeEntrancePermissions)
+        if (!employee.UserAccessRole.UserAccess.CanRevokeEntrancePermissions)
         {
             response.HttpResponseCode = 400;
             response.Message = "You can't Revoke entrance Permissions";
@@ -566,7 +566,7 @@ public class EmployeeService : IEmployeeService
             .FirstAsync(e => e.Id == employeeId);
         if (CheckEmployeeId(employee, response, out var serviceResponse)) return serviceResponse;
         
-        if (employee.UserAccessRole.UserAccess.CanSignVisitedPlace)
+        if (!employee.UserAccessRole.UserAccess.CanSignVisitedPlace)
         {
             response.HttpResponseCode = 400;
             response.Message = "You can't Sign visited place";
