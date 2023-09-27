@@ -17,4 +17,5 @@ public class OrganizationPlace
     public List<Employee> Employees { get; set; } = new();
     [JsonIgnore] 
     public List<EntrancePermission> EntrancePermissions { get; set; } = new();
+    public List<VisitedPlace> VisitedPlaces { get; set; } = new();
 }

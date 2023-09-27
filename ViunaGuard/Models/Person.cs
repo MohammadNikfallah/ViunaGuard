@@ -58,6 +58,8 @@ namespace ViunaGuard.Models
         public List<EntrancePermission> EntrancePermissions { get; set; } = new();
         [JsonIgnore]
         public List<Organization> BannedFrom { get; set; } = new();
+        [JsonIgnore]
+        public List<VisitedPlace> VisitedPlaces { get; set; } = new();
         //TODO signed implementation
         public bool Signed { get; set; } = false;
     }

@@ -9,8 +9,6 @@
         public Car? Car { get; set; }
         public bool PermissionGranted { get; set; }
         public OrganizationPlace? OrganizationPlace { get; set; }
-        public bool DidVisitOrgPlace { get; set; } = false;
-        public Employee? OrgPlaceSignEmployee { get; set; }
         public List<SignedPermissionGetDto> Signatures { get; set; } = new();
     }
 }

@@ -89,7 +89,7 @@ namespace ViunaGuard.Services
                 entranceGroup = entranceGroup.Where(e => e.DoorId == doorId);
             if (enterOrExitId > 0)
                 entranceGroup = entranceGroup.Where(e => e.EnterOrExitId == enterOrExitId);
-            if (!employee!.UserAccessRole.UserAccess.CanSeeOtherGuardsEntrances)
+            if (!employee.UserAccessRole.UserAccess.CanSeeOtherGuardsEntrances)
                 entranceGroup = entranceGroup.Where(e => e.GuardId == employeeId);
             else if (guardId > 0)
                 entranceGroup = entranceGroup.Where(e => e.GuardId == guardId);
@@ -139,7 +139,7 @@ namespace ViunaGuard.Services
             response.Data.Person = _mapper.Map<PersonGetDto>(person);
             response.Data.EntrancePermissions =
                 person.EntrancePermissions
-                    .Where(e => e.OrganizationId == employee!.OrganizationId)
+                    .Where(e => e.OrganizationId == employee!.OrganizationId && e.PermissionGranted)
                     .Select(e => _mapper.Map<EntrancePermissionGetDto>(e)).ToList();
             if (response.Data.Job != null)
             {
@@ -168,7 +168,7 @@ namespace ViunaGuard.Services
                             response.Data.DoesHavePermission = true;
                 }
             
-            if (person.BannedFrom.Exists(o => o.Id == employee.OrganizationId))
+            if (person.BannedFrom.Exists(o => o.Id == employee!.OrganizationId))
             {
                 response.Data.IsInBlackList = true;
                 response.Data.DoesHavePermission = false;
@@ -193,6 +193,8 @@ namespace ViunaGuard.Services
             
             var person = await _context.People
                 .Include(p => p.Cars)
+                .Include(p => p.VisitedPlaces)
+                .ThenInclude(v => v.OrganizationPlace)
                 .Include(p => p.Jobs)
                 .ThenInclude(j => j.EmployeeType)
                 .Include(p => p.Jobs)
@@ -215,21 +217,19 @@ namespace ViunaGuard.Services
             response.Data.Person = _mapper.Map<PersonGetDto>(person);
             response.Data.EntrancePermissions =
                 person.EntrancePermissions
-                    .Where(e => e.OrganizationId == employee!.OrganizationId)
+                    .Where(e => e.OrganizationId == employee!.OrganizationId && e.PermissionGranted)
                     .Select(e => _mapper.Map<EntrancePermissionGetDto>(e))
                     .OrderByDescending(e => e.StartValidityTime)
-                    .Take(5).ToList();
+                    .Take(3).ToList();
+            
+            response.Data.VisitedPlaces = person.VisitedPlaces
+                .Where(e => e.OrganizationPlace!.OrganizationId == employee!.OrganizationId && e.VisitTime.Date == DateTime.Now.Date)
+                .OrderByDescending(e => e.VisitTime)
+                .Take(3).ToList();
+
             if (response.Data.Job != null)
             {
                 response.Data.DoesHavePermission = true;
-            }
-            
-            foreach (var ep in response.Data.EntrancePermissions)
-            {
-                if(ep.EndValidityTime > DateTime.Now)
-                    if (ep.StartValidityTime < DateTime.Now)
-                        if(ep.DidVisitOrgPlace)
-                            response.Data.DoesHavePermission = true;
             }
 
             response.HttpResponseCode = 200;

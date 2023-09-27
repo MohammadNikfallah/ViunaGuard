@@ -35,7 +35,7 @@ public class EmployeeService : IEmployeeService
         }
 
         var employeePeriodicShift = _mapper.Map<EmployeePeriodicShift>(shift);
-        employeePeriodicShift.OrganizationId = employee!.OrganizationId;
+        employeePeriodicShift.OrganizationId = employee.OrganizationId;
         employeePeriodicShift.ShiftMakerEmployeeId = employeeId;
         
         await _context.EmployeePeriodicShifts.AddAsync(employeePeriodicShift);
@@ -84,7 +84,7 @@ public class EmployeeService : IEmployeeService
             response.HttpResponseCode = serviceResponse.HttpResponseCode;
             response.Message = serviceResponse.Message;
             return response;
-        };
+        }
 
         if (!employee!.UserAccessRole.UserAccess.CanChangeShifts)
         {
@@ -101,7 +101,7 @@ public class EmployeeService : IEmployeeService
             return response;
         }
 
-        if (shiftEmployee.OrganizationId != employee!.OrganizationId)
+        if (shiftEmployee.OrganizationId != employee.OrganizationId)
         {
             response.HttpResponseCode = 400;
             response.Message = "You cant add shift for this employee";
@@ -211,6 +211,7 @@ public class EmployeeService : IEmployeeService
             
         var periodicShift = _context.EmployeePeriodicShifts
             .Include(e => e.GuardDoor)
+            .Include(e => e.WorkPlace)
             .Where(e => e.EmployeeId == employeeId);
         var todayPeriodicShifts = periodicShift
             .Where(e => ((time.Date.DayOfYear - e.StartTime.Date.DayOfYear) % e.PeriodDayRange) == 0);
@@ -233,6 +234,7 @@ public class EmployeeService : IEmployeeService
             
         var monthlyShift = _context.EmployeeShiftsPeriodicMonthly
             .Include(e => e.GuardDoor)
+            .Include(e => e.WorkPlace)
             .Where(e => e.EmployeeId == employeeId);
         var todayMonthlyShifts = monthlyShift
             .Where(e => e.DayOfMonth == pc.GetDayOfMonth(time));
@@ -253,6 +255,7 @@ public class EmployeeService : IEmployeeService
             
         var shift = _context.EmployeeShifts
             .Include(e => e.GuardDoor)
+            .Include(e => e.WorkPlace)
             .Where(e => e.EmployeeId == employeeId);
         var nowShift = await shift
             .FirstOrDefaultAsync(e => time.Date < e.FinishTime.Date && time.Date > e.StartTime.Date);
@@ -282,7 +285,7 @@ public class EmployeeService : IEmployeeService
             return response;
         }
 
-        if (!employee.UserAccessRole.UserAccess.CanSeeEntrancePermissions)
+        if (!employee!.UserAccessRole.UserAccess.CanSeeEntrancePermissions)
         {
             response.HttpResponseCode = 400;
             response.Message = "You can't see the entrance permissions";
@@ -421,7 +424,7 @@ public class EmployeeService : IEmployeeService
             return response;
         }
 
-        if (shiftEmployee.OrganizationId != employee!.OrganizationId)
+        if (shiftEmployee.OrganizationId != employee.OrganizationId)
         {
             response.HttpResponseCode = 400;
             response.Message = "You cant add shift for this employee";
@@ -523,7 +526,7 @@ public class EmployeeService : IEmployeeService
         var permission = await _context.EntrancePermissions
             .FindAsync(entrancePermissionId);
 
-        if (permission.OrganizationId != employee.OrganizationId)
+        if (permission!.OrganizationId != employee.OrganizationId)
         {
             response.HttpResponseCode = 400;
             response.Message = "you cant access this entrance permission";
@@ -557,7 +560,7 @@ public class EmployeeService : IEmployeeService
         return response;
     }
 
-    public async Task<ServiceResponse> SignVisitedPlace(int entrancePermissionId, int employeeId)
+    public async Task<ServiceResponse> SignVisitedPlace(string personId, DateTime visitTime, int employeeId)
     {
         var response = new ServiceResponse();
         var employee = await _context.Employees
@@ -573,22 +576,31 @@ public class EmployeeService : IEmployeeService
             return response;
         }
 
-        var permission = await _context.EntrancePermissions
-            .FindAsync(entrancePermissionId);
+        if (!await _context.People.AnyAsync(p => p.Id == personId))
+        {
+            response.HttpResponseCode = 400;
+            response.Message = "Person Not Found!";
+            return response;   
+        }
 
         var currentShift = await GetCurrentShift(employeeId);
 
-        if (permission.OrganizationPlaceId != currentShift.Data.WorkPlace.Id)
+        if (currentShift.Data == null)
         {
             response.HttpResponseCode = 400;
-            response.Message = "you cant access this entrance permission";
-            return response;
+            response.Message = "You Dont Have Shift Right Now";
+            return response; 
         }
-        
-        permission.DidVisitOrgPlace = true;
-        permission.OrgPlaceSignEmployeeId = employeeId;
-        
-        _context.EntrancePermissions.Update(permission);
+
+        var visitedPlace = new VisitedPlace()
+        {
+            PersonId = personId,
+            OrganizationPlaceId = currentShift.Data.WorkPlace.Id,
+            SignatoryEmployeeId = employeeId,
+            VisitTime = visitTime
+        };
+
+        await _context.VisitedPlace.AddAsync(visitedPlace);
         await _context.SaveChangesAsync();
         response.HttpResponseCode = 200;
         return response;
@@ -608,7 +620,7 @@ public class EmployeeService : IEmployeeService
             return response;
         }
 
-        if (employee.UserAccessRole.UserAccess.CanSeeEntrancePermissions)
+        if (employee!.UserAccessRole.UserAccess.CanSeeEntrancePermissions)
         {
             response.HttpResponseCode = 400;
             response.Message = "You can't see entrance permissions";

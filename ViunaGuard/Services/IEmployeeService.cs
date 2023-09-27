@@ -13,5 +13,5 @@ public interface IEmployeeService
     public Task<ServiceResponse> SignEntrancePermission(int entrancePermissionId, int employeeId);
     public Task<ServiceResponse<List<EntrancePermissionGetDto>>> GetPermissions(int employeeId);
     public Task<ServiceResponse> RevokeEntrancePermission(int entrancePermissionId, int employeeId);
-    public Task<ServiceResponse> SignVisitedPlace(int entrancePermissionId, int employeeId);
+    public Task<ServiceResponse> SignVisitedPlace(string personId, DateTime visitTime, int employeeId);
 }

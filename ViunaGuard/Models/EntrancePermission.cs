@@ -30,11 +30,6 @@ namespace ViunaGuard.Models
         public int OrganizationPlaceId { get; set; }
         [JsonIgnore]
         public OrganizationPlace? OrganizationPlace { get; set; }
-        public bool DidVisitOrgPlace { get; set; } = false;
-        [ForeignKey("OrgPlaceEmployee")]
-        public int? OrgPlaceSignEmployeeId { get; set; }
-        [JsonIgnore]
-        public Employee? OrgPlaceSignEmployee { get; set; }
         [JsonIgnore]
         public List<SignedEntrancePermission> Signatures { get; set; } = new();
     }

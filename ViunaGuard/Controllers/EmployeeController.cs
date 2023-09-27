@@ -137,9 +137,9 @@ namespace ViunaGuard.Controllers
         }
         
         [HttpPut("SignVisitedPlace")]
-        public async Task<ActionResult> SignVisitedPlace(int entrancePermissionId, int employeeId)
+        public async Task<ActionResult> SignVisitedPlace(string personId, DateTime visitTime, int employeeId)
         {
-            var response = await _employeeService.SignVisitedPlace(entrancePermissionId, employeeId);
+            var response = await _employeeService.SignVisitedPlace(personId, visitTime, employeeId);
             if (response.HttpResponseCode == 200)
                 return Ok();
             if (response.HttpResponseCode == 404)
